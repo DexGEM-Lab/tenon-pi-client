@@ -1,0 +1,61 @@
+{
+  "descriptor_resource": "tenon_pi/profiles/libero/pi05-libero-transform-v1.json",
+  "normalization_digest": "sha256:b3a44bb2810436fb62917decaea58bd4d9110255df527dea21e8fd40c960bd84",
+  "normalization_resource": "tenon_pi/profiles/libero/pi05-libero-norm-stats.json",
+  "normalization_source": "gs://openpi-assets/checkpoints/pi05_libero/assets/physical-intelligence/libero/norm_stats.json",
+  "openpi_revision": "215abfb217dbac7d5f1273282331b9b1866c0479",
+  "output_projection": {
+    "applies_to": [
+      "synchronous_chunked",
+      "async_aligned",
+      "guided_rtc"
+    ],
+    "committed_prefix_space": "actually_applied_projected_commands",
+    "controller_equivalence": {
+      "actuator_source": "robosuite/robots/manipulator.py:Manipulator.grip_action",
+      "controller": "OSC_POSE",
+      "gripper": "PandaGripper.format_action uses sign(action); clipping a finite scalar to [-1,1] preserves its sign and the complete recurrent gripper command sequence",
+      "gripper_source": "robosuite/models/grippers/panda_gripper.py:PandaGripper.format_action",
+      "library": "robosuite",
+      "motion": "Controller.scale_action clips each of six inputs to [-1,1] before applying the configured affine scales",
+      "motion_source": "robosuite/controllers/base_controller.py:Controller.scale_action",
+      "source_sha256": {
+        "robosuite/controllers/base_controller.py": "61f99a2daeb4eb6e39bfb996d94c5a5689ef3bc771d030d070193ea56d6a8332",
+        "robosuite/controllers/config/osc_pose.json": "07f3a8b41d3eecc8a36700a85bd8207ee3fbc36eb73f6a2248340c96770d1e45",
+        "robosuite/controllers/osc.py": "cfa62a0e719bc53ef0c701efa66f7b3e2272d4fca2150ec73c05bb145eba85cb",
+        "robosuite/models/grippers/panda_gripper.py": "a3760a8fc4599fa6f79914304b82466f3c1bda1a945943ca693bb57f00dc59eb",
+        "robosuite/robots/manipulator.py": "d37ff4c00112cfba9bf4b96bf48ad5664422fd824dd4fbcd1eebda650a451b64"
+      },
+      "version": "1.4.1"
+    },
+    "lower": [
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0,
+      -1.0
+    ],
+    "raw_flow_sampler_unchanged": true,
+    "stage": "after_unnormalization_and_dimension_trim",
+    "type": "componentwise_clip",
+    "upper": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  "profile_version": "openpi-pi05-libero-h10-v1",
+  "projection_reference_commit": "933f91496d2adb15fd591a3f8a04c950e364eab9",
+  "protocol_output": {
+    "openpi-ws-v1": "raw",
+    "tenon-control-v1": "projected"
+  },
+  "transform_digest": "sha256:81bd9293ace15b1a9209ddf514c79a88e1bf0c2a7b521a13b2449747644c20d6",
+  "transform_file_sha256": "4157e65cc7d6ba97b585ac8ae5c63a21d4624f7322c865f83883eb1ca0cae58b"
+}

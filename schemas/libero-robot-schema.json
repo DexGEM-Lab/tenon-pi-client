@@ -1,0 +1,132 @@
+{
+  "schema_version": "robot-schema-v1",
+  "controller_hz": 20.0,
+  "state_channels": [
+    {
+      "name": "eef_x",
+      "unit": "meter",
+      "lower": -1.0,
+      "upper": 1.0
+    },
+    {
+      "name": "eef_y",
+      "unit": "meter",
+      "lower": -1.0,
+      "upper": 1.0
+    },
+    {
+      "name": "eef_z",
+      "unit": "meter",
+      "lower": 0.0,
+      "upper": 2.0
+    },
+    {
+      "name": "eef_rx",
+      "unit": "radian",
+      "lower": -4.0,
+      "upper": 4.0
+    },
+    {
+      "name": "eef_ry",
+      "unit": "radian",
+      "lower": -4.0,
+      "upper": 4.0
+    },
+    {
+      "name": "eef_rz",
+      "unit": "radian",
+      "lower": -4.0,
+      "upper": 4.0
+    },
+    {
+      "name": "gripper_qpos_0",
+      "unit": "meter",
+      "lower": -0.05,
+      "upper": 0.05
+    },
+    {
+      "name": "gripper_qpos_1",
+      "unit": "meter",
+      "lower": -0.05,
+      "upper": 0.05
+    }
+  ],
+  "action_channels": [
+    {
+      "name": "delta_x",
+      "unit": "unitless",
+      "lower": -1.0,
+      "upper": 1.0
+    },
+    {
+      "name": "delta_y",
+      "unit": "unitless",
+      "lower": -1.0,
+      "upper": 1.0
+    },
+    {
+      "name": "delta_z",
+      "unit": "unitless",
+      "lower": -1.0,
+      "upper": 1.0
+    },
+    {
+      "name": "delta_rx",
+      "unit": "unitless",
+      "lower": -1.0,
+      "upper": 1.0
+    },
+    {
+      "name": "delta_ry",
+      "unit": "unitless",
+      "lower": -1.0,
+      "upper": 1.0
+    },
+    {
+      "name": "delta_rz",
+      "unit": "unitless",
+      "lower": -1.0,
+      "upper": 1.0
+    },
+    {
+      "name": "gripper",
+      "unit": "unitless",
+      "lower": -1.0,
+      "upper": 1.0
+    }
+  ],
+  "action_semantics": "cartesian_delta",
+  "cameras": [
+    {
+      "id": "base",
+      "required": true,
+      "accepted_encodings": [
+        "jpeg"
+      ],
+      "color_space": "rgb",
+      "max_width": 256,
+      "max_height": 256
+    },
+    {
+      "id": "left_wrist",
+      "required": true,
+      "accepted_encodings": [
+        "jpeg"
+      ],
+      "color_space": "rgb",
+      "max_width": 256,
+      "max_height": 256
+    }
+  ],
+  "image_transform": {
+    "target_width": 224,
+    "target_height": 224,
+    "resize_mode": "pad",
+    "color_space": "rgb",
+    "dtype": "uint8"
+  },
+  "action_horizon_steps": 10,
+  "max_committed_prefix_steps": 5,
+  "transform_digest": "sha256:81bd9293ace15b1a9209ddf514c79a88e1bf0c2a7b521a13b2449747644c20d6",
+  "normalization_digest": "sha256:b3a44bb2810436fb62917decaea58bd4d9110255df527dea21e8fd40c960bd84"
+}

@@ -1,0 +1,192 @@
+{
+  "profile_version": "tenon-robot-profile-v1",
+  "profile_id": "synthetic-gantry-v1",
+  "calibration_digest": "sha256:7d19f18b1dc331b964691f71aa2132dcc3c7cf55b0c23abac11e4e557107bb68",
+  "state": {
+    "native": [
+      {
+        "name": "x",
+        "unit": "millimeter",
+        "lower": -100.0,
+        "upper": 100.0
+      },
+      {
+        "name": "y",
+        "unit": "millimeter",
+        "lower": -100.0,
+        "upper": 100.0
+      },
+      {
+        "name": "z",
+        "unit": "millimeter",
+        "lower": -100.0,
+        "upper": 100.0
+      },
+      {
+        "name": "jaw",
+        "unit": "millimeter",
+        "lower": 0.0,
+        "upper": 40.0
+      },
+      {
+        "name": "load_sensor",
+        "unit": "unitless",
+        "lower": -1.0,
+        "upper": 1.0
+      }
+    ],
+    "canonical": [
+      {
+        "name": "z",
+        "unit": "meter",
+        "native_index": 2,
+        "conversion": "millimeters_to_meters",
+        "constant": null,
+        "native_closed": null,
+        "native_open": null
+      },
+      {
+        "name": "x",
+        "unit": "meter",
+        "native_index": 0,
+        "conversion": "millimeters_to_meters",
+        "constant": null,
+        "native_closed": null,
+        "native_open": null
+      },
+      {
+        "name": "y",
+        "unit": "meter",
+        "native_index": 1,
+        "conversion": "millimeters_to_meters",
+        "constant": null,
+        "native_closed": null,
+        "native_open": null
+      },
+      {
+        "name": "grip",
+        "unit": "normalized_0_1",
+        "native_index": 3,
+        "conversion": "gripper_closedness",
+        "constant": null,
+        "native_closed": 0.0,
+        "native_open": 40.0
+      },
+      {
+        "name": "load",
+        "unit": "unitless",
+        "native_index": 4,
+        "conversion": "identity",
+        "constant": null,
+        "native_closed": null,
+        "native_open": null
+      }
+    ]
+  },
+  "action": {
+    "native": [
+      {
+        "name": "x",
+        "unit": "millimeter",
+        "lower": -100.0,
+        "upper": 100.0
+      },
+      {
+        "name": "y",
+        "unit": "millimeter",
+        "lower": -100.0,
+        "upper": 100.0
+      },
+      {
+        "name": "z",
+        "unit": "millimeter",
+        "lower": -100.0,
+        "upper": 100.0
+      },
+      {
+        "name": "jaw",
+        "unit": "millimeter",
+        "lower": 0.0,
+        "upper": 40.0
+      }
+    ],
+    "canonical": [
+      {
+        "name": "z",
+        "unit": "meter",
+        "native_index": 2,
+        "conversion": "millimeters_to_meters",
+        "constant": null,
+        "native_closed": null,
+        "native_open": null
+      },
+      {
+        "name": "x",
+        "unit": "meter",
+        "native_index": 0,
+        "conversion": "millimeters_to_meters",
+        "constant": null,
+        "native_closed": null,
+        "native_open": null
+      },
+      {
+        "name": "y",
+        "unit": "meter",
+        "native_index": 1,
+        "conversion": "millimeters_to_meters",
+        "constant": null,
+        "native_closed": null,
+        "native_open": null
+      },
+      {
+        "name": "grip",
+        "unit": "normalized_0_1",
+        "native_index": 3,
+        "conversion": "gripper_closedness",
+        "constant": null,
+        "native_closed": 0.0,
+        "native_open": 40.0
+      }
+    ]
+  },
+  "action_semantics": "joint_position",
+  "controller_hz": 10.0,
+  "cameras": [
+    {
+      "id": "view_0",
+      "width": 80,
+      "height": 60,
+      "serial": "synthetic-0",
+      "mount": "synthetic-view-0",
+      "capture_clock": "synthetic-monotonic",
+      "rotation_degrees": 0.0,
+      "calibration_digest": "sha256:7d19f18b1dc331b964691f71aa2132dcc3c7cf55b0c23abac11e4e557107bb68"
+    },
+    {
+      "id": "view_1",
+      "width": 40,
+      "height": 32,
+      "serial": "synthetic-1",
+      "mount": "synthetic-view-1",
+      "capture_clock": "synthetic-monotonic",
+      "rotation_degrees": 0.0,
+      "calibration_digest": "sha256:7d19f18b1dc331b964691f71aa2132dcc3c7cf55b0c23abac11e4e557107bb68"
+    }
+  ],
+  "image_transform": {
+    "target_width": 224,
+    "target_height": 224,
+    "resize_mode": "pad"
+  },
+  "action_horizon_steps": 3,
+  "max_committed_prefix_steps": 1,
+  "model_state_width": 6,
+  "model_action_width": 6,
+  "output_projection": "strict",
+  "model_delta_state_indices": [
+    0,
+    1,
+    2,
+    null
+  ]
+}

@@ -1,0 +1,364 @@
+{
+  "$defs": {
+    "CaptureCamera": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "width": {
+          "minimum": 1,
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "minimum": 1,
+          "title": "Height",
+          "type": "integer"
+        },
+        "serial": {
+          "minLength": 1,
+          "title": "Serial",
+          "type": "string"
+        },
+        "mount": {
+          "minLength": 1,
+          "title": "Mount",
+          "type": "string"
+        },
+        "capture_clock": {
+          "minLength": 1,
+          "title": "Capture Clock",
+          "type": "string"
+        },
+        "rotation_degrees": {
+          "title": "Rotation Degrees",
+          "type": "number"
+        },
+        "calibration_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Calibration Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "width",
+        "height",
+        "serial",
+        "mount",
+        "capture_clock",
+        "rotation_degrees",
+        "calibration_digest"
+      ],
+      "title": "CaptureCamera",
+      "type": "object"
+    },
+    "Coordinate": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "radian",
+            "radian_per_second",
+            "meter",
+            "meter_per_second",
+            "normalized_0_1",
+            "unitless"
+          ],
+          "title": "Unit",
+          "type": "string"
+        },
+        "native_index": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Native Index"
+        },
+        "conversion": {
+          "enum": [
+            "identity",
+            "degrees_to_radians",
+            "millimeters_to_meters",
+            "gripper_closedness",
+            "constant"
+          ],
+          "title": "Conversion",
+          "type": "string"
+        },
+        "constant": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Constant"
+        },
+        "native_closed": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Native Closed"
+        },
+        "native_open": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Native Open"
+        }
+      },
+      "required": [
+        "name",
+        "unit",
+        "native_index",
+        "conversion"
+      ],
+      "title": "Coordinate",
+      "type": "object"
+    },
+    "NativeChannel": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "pattern": "^[a-z][a-z0-9_.-]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "degree",
+            "millimeter",
+            "open_percent",
+            "closed_percent",
+            "encoder_tick",
+            "radian",
+            "radian_per_second",
+            "meter",
+            "meter_per_second",
+            "normalized_0_1",
+            "unitless"
+          ],
+          "title": "Unit",
+          "type": "string"
+        },
+        "lower": {
+          "title": "Lower",
+          "type": "number"
+        },
+        "upper": {
+          "title": "Upper",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "unit",
+        "lower",
+        "upper"
+      ],
+      "title": "NativeChannel",
+      "type": "object"
+    },
+    "ProfileImageTransform": {
+      "additionalProperties": false,
+      "properties": {
+        "target_width": {
+          "minimum": 1,
+          "title": "Target Width",
+          "type": "integer"
+        },
+        "target_height": {
+          "minimum": 1,
+          "title": "Target Height",
+          "type": "integer"
+        },
+        "resize_mode": {
+          "enum": [
+            "pad",
+            "center_crop",
+            "stretch"
+          ],
+          "title": "Resize Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target_width",
+        "target_height",
+        "resize_mode"
+      ],
+      "title": "ProfileImageTransform",
+      "type": "object"
+    },
+    "VectorMapping": {
+      "additionalProperties": false,
+      "properties": {
+        "native": {
+          "items": {
+            "$ref": "#/$defs/NativeChannel"
+          },
+          "minItems": 1,
+          "title": "Native",
+          "type": "array"
+        },
+        "canonical": {
+          "items": {
+            "$ref": "#/$defs/Coordinate"
+          },
+          "minItems": 1,
+          "title": "Canonical",
+          "type": "array"
+        }
+      },
+      "required": [
+        "native",
+        "canonical"
+      ],
+      "title": "VectorMapping",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "profile_version": {
+      "const": "tenon-robot-profile-v1",
+      "title": "Profile Version",
+      "type": "string"
+    },
+    "profile_id": {
+      "pattern": "^[a-z][a-z0-9_.-]*$",
+      "title": "Profile Id",
+      "type": "string"
+    },
+    "calibration_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "title": "Calibration Digest",
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/$defs/VectorMapping"
+    },
+    "action": {
+      "$ref": "#/$defs/VectorMapping"
+    },
+    "action_semantics": {
+      "enum": [
+        "joint_position",
+        "joint_delta",
+        "cartesian_delta"
+      ],
+      "title": "Action Semantics",
+      "type": "string"
+    },
+    "controller_hz": {
+      "exclusiveMinimum": 0,
+      "maximum": 500,
+      "title": "Controller Hz",
+      "type": "number"
+    },
+    "cameras": {
+      "items": {
+        "$ref": "#/$defs/CaptureCamera"
+      },
+      "minItems": 1,
+      "title": "Cameras",
+      "type": "array"
+    },
+    "image_transform": {
+      "$ref": "#/$defs/ProfileImageTransform"
+    },
+    "action_horizon_steps": {
+      "maximum": 512,
+      "minimum": 1,
+      "title": "Action Horizon Steps",
+      "type": "integer"
+    },
+    "max_committed_prefix_steps": {
+      "maximum": 511,
+      "minimum": 0,
+      "title": "Max Committed Prefix Steps",
+      "type": "integer"
+    },
+    "model_state_width": {
+      "minimum": 1,
+      "title": "Model State Width",
+      "type": "integer"
+    },
+    "model_action_width": {
+      "minimum": 1,
+      "title": "Model Action Width",
+      "type": "integer"
+    },
+    "output_projection": {
+      "default": "strict",
+      "enum": [
+        "strict",
+        "clip_bounds_v1"
+      ],
+      "title": "Output Projection",
+      "type": "string"
+    },
+    "model_delta_state_indices": {
+      "items": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Model Delta State Indices",
+      "type": "array"
+    }
+  },
+  "required": [
+    "profile_version",
+    "profile_id",
+    "calibration_digest",
+    "state",
+    "action",
+    "action_semantics",
+    "controller_hz",
+    "cameras",
+    "image_transform",
+    "action_horizon_steps",
+    "max_committed_prefix_steps",
+    "model_state_width",
+    "model_action_width",
+    "model_delta_state_indices"
+  ],
+  "title": "RobotProfile",
+  "type": "object"
+}

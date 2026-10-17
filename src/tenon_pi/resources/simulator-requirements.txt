@@ -1,0 +1,19 @@
+# Isolated Python 3.11 CPU simulator environment; no policy/model package.
+# LIBERO source is separately pinned to OpenPI's recorded submodule revision.
+numpy==1.26.4
+scipy==1.11.4
+numba==0.59.1
+mujoco==3.2.3
+robosuite==1.4.1
+opencv-python==4.10.0.84
+Pillow==10.4.0
+h5py==3.11.0
+bddl==1.0.1
+easydict==1.13
+cloudpickle==3.0.0
+gym==0.26.2
+PyYAML==6.0.2
+matplotlib==3.8.4
+imageio==2.34.2
+imageio-ffmpeg==0.5.1
+future==1.0.0

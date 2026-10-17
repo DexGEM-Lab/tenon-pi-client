@@ -1,0 +1,7381 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Tenon Pi API",
+    "version": "0.1.0",
+    "description": "Approved for implementation on 2026-10-14 from source checkpoint b644badcd8edc2a97170755a5bb10ead20879107. Native lifecycle API for managed OpenPI training and control. Functionality is not yet implemented or released; Physical Intelligence hosted API compatibility is unverified."
+  },
+  "servers": [
+    {
+      "url": "https://tenon.dex-gem.ai/v1"
+    }
+  ],
+  "tags": [
+    {
+      "name": "waitlist"
+    },
+    {
+      "name": "auth"
+    },
+    {
+      "name": "account"
+    },
+    {
+      "name": "meta"
+    },
+    {
+      "name": "billing"
+    },
+    {
+      "name": "datasets"
+    },
+    {
+      "name": "uploads"
+    },
+    {
+      "name": "training"
+    },
+    {
+      "name": "checkpoints"
+    },
+    {
+      "name": "deployments"
+    },
+    {
+      "name": "control"
+    },
+    {
+      "name": "evaluations"
+    },
+    {
+      "name": "admin"
+    }
+  ],
+  "paths": {
+    "/waitlist/submissions": {
+      "post": {
+        "tags": [
+          "waitlist"
+        ],
+        "summary": "Submit waitlist application",
+        "security": [],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WaitlistSubmissionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Submission persisted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaitlistSubmission"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/activate": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Consume one-time activation",
+        "security": [],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Activated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Secret-bearing replay is available only from the 10-minute encrypted idempotency vault; after deletion retry returns secret_response_unavailable."
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Create browser session",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Logged in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Revoke browser session",
+        "security": [
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logged out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Get no-store SPA session bootstrap",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionBootstrap"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                },
+                "description": "Session bootstrap must never be cached."
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Requires no CSRF header. Returns the approved flat User fields plus top-level csrf_token (opaque string for cookie auth, null for API-key auth). No cross-origin credentialed reads."
+      }
+    },
+    "/credits": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Get user credit balance",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Balance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBalance"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/capabilities": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Get product capabilities",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Capabilities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Capabilities"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Capacity unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pricing": {
+      "get": {
+        "tags": [
+          "billing"
+        ],
+        "summary": "Get current price catalog",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pricing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricingCatalog"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quotes": {
+      "post": {
+        "tags": [
+          "billing"
+        ],
+        "summary": "Create an immutable quote",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Quote",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Semantic validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Capacity unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Training-job quotes require write scope. Control-session quotes require control scope; control does not imply write. Request schema is unchanged."
+      }
+    },
+    "/quotes/{quote_id}": {
+      "get": {
+        "tags": [
+          "billing"
+        ],
+        "summary": "Get quote",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "quote_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Quote",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api-keys": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "summary": "List API keys",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Keys",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/APIKey"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Create API key",
+        "security": [
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/APIKeyCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Key returned once",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Secret-bearing replay is available only from the 10-minute encrypted idempotency vault; after deletion retry returns secret_response_unavailable."
+      }
+    },
+    "/api-keys/{key_id}": {
+      "delete": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Revoke API key",
+        "security": [
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revoked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/datasets": {
+      "get": {
+        "tags": [
+          "datasets"
+        ],
+        "summary": "List datasets",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Datasets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Dataset"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "datasets"
+        ],
+        "summary": "Create dataset container",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DatasetCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Dataset",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dataset"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/datasets/{dataset_id}": {
+      "get": {
+        "tags": [
+          "datasets"
+        ],
+        "summary": "Get dataset",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dataset",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dataset"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/datasets/{dataset_id}/versions": {
+      "get": {
+        "tags": [
+          "datasets"
+        ],
+        "summary": "List versions",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Versions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/DatasetVersion"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "datasets"
+        ],
+        "summary": "Create immutable version and upload",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DatasetVersionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Version and upload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetVersionCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Semantic validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/datasets/{dataset_id}/versions/{version_id}": {
+      "get": {
+        "tags": [
+          "datasets"
+        ],
+        "summary": "Get dataset version",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetVersion"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/uploads/{upload_id}": {
+      "get": {
+        "tags": [
+          "uploads"
+        ],
+        "summary": "Get upload",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Upload"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/uploads/{upload_id}/parts/sign": {
+      "post": {
+        "tags": [
+          "uploads"
+        ],
+        "summary": "Sign declared upload parts",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadPartSignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed parts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadPartSignResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/uploads/{upload_id}/files/{file_id}/complete": {
+      "post": {
+        "tags": [
+          "uploads"
+        ],
+        "summary": "Complete one file",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "file_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileCompleteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Upload status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Upload"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Semantic validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/uploads/{upload_id}/complete": {
+      "post": {
+        "tags": [
+          "uploads"
+        ],
+        "summary": "Freeze and verify upload",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Verification started",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Upload"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Semantic validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Freezes staging, binds exact object version IDs, verifies digests, and promotes to immutable content-addressed objects before readiness."
+      }
+    },
+    "/uploads/{upload_id}/abort": {
+      "post": {
+        "tags": [
+          "uploads"
+        ],
+        "summary": "Abort upload",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "upload_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"[0-9]+\"$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Aborted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/training/jobs": {
+      "get": {
+        "tags": [
+          "training"
+        ],
+        "summary": "List training jobs",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Jobs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TrainingJob"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "training"
+        ],
+        "summary": "Reserve credits and create training job",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrainingJobCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Job queued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingJob"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Semantic validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Capacity unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/training/jobs/{job_id}": {
+      "get": {
+        "tags": [
+          "training"
+        ],
+        "summary": "Get training job",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingJob"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/training/jobs/{job_id}/cancel": {
+      "post": {
+        "tags": [
+          "training"
+        ],
+        "summary": "Request cancellation",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"[0-9]+\"$"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Cancel requested",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingJob"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/training/jobs/{job_id}/events": {
+      "get": {
+        "tags": [
+          "training"
+        ],
+        "summary": "List durable job events",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/JobEvent"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/checkpoints": {
+      "get": {
+        "tags": [
+          "checkpoints"
+        ],
+        "summary": "List checkpoints",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "training_job_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Checkpoints",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Checkpoint"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/checkpoints/{checkpoint_id}": {
+      "get": {
+        "tags": [
+          "checkpoints"
+        ],
+        "summary": "Get checkpoint",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "checkpoint_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Checkpoint",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Checkpoint"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/checkpoints/{checkpoint_id}/download-url": {
+      "post": {
+        "tags": [
+          "checkpoints"
+        ],
+        "summary": "Create short-lived export URL",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "checkpoint_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Download URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DownloadURL"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/deployments": {
+      "get": {
+        "tags": [
+          "deployments"
+        ],
+        "summary": "List deployments",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deployments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Deployment"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "deployments"
+        ],
+        "summary": "Create logical deployment",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeploymentCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Deployment creating",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Deployment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Semantic validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/deployments/{deployment_id}": {
+      "get": {
+        "tags": [
+          "deployments"
+        ],
+        "summary": "Get deployment",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "deployment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deployment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Deployment"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/deployments/{deployment_id}/stop": {
+      "post": {
+        "tags": [
+          "deployments"
+        ],
+        "summary": "Drain and stop deployment",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "deployment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"[0-9]+\"$"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Draining",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Deployment"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/control/sessions": {
+      "get": {
+        "tags": [
+          "control"
+        ],
+        "summary": "List control sessions",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sessions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ControlSession"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "control"
+        ],
+        "summary": "Reserve credits and request session admission",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ControlSessionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Session queued/admitting",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Insufficient credits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Semantic validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Capacity unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/control/sessions/{session_id}": {
+      "get": {
+        "tags": [
+          "control"
+        ],
+        "summary": "Get control session",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlSession"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/control/sessions/{session_id}/connections": {
+      "post": {
+        "tags": [
+          "control"
+        ],
+        "summary": "Issue one-time control connection",
+        "description": "See docs/api-contract.md section 8. Secret-bearing replay is available only from the 10-minute encrypted idempotency vault; after deletion retry returns secret_response_unavailable.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Connection token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlConnection"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Expired resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/control/sessions/{session_id}/close": {
+      "post": {
+        "tags": [
+          "control"
+        ],
+        "summary": "Close session and release reservation",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"[0-9]+\"$"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Closing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControlSession"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/evaluations": {
+      "get": {
+        "tags": [
+          "evaluations"
+        ],
+        "summary": "List evaluations",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evaluations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Evaluation"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "evaluations"
+        ],
+        "summary": "Create evaluation record",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Evaluation processing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evaluation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Semantic validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/evaluations/{evaluation_id}": {
+      "get": {
+        "tags": [
+          "evaluations"
+        ],
+        "summary": "Get evaluation",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "evaluation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evaluation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Evaluation"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Provision alpha user and tenant",
+        "security": [
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUserCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User provisioned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminUserCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "description": "Secret-bearing replay is available only from the 10-minute encrypted idempotency vault; after deletion retry returns secret_response_unavailable."
+      }
+    },
+    "/admin/users/{user_id}/credits": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Adjust user credits with audit event",
+        "security": [
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"[0-9]+\"$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreditAdjustment"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated balance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBalance"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "Precondition required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/waitlist/submissions": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "List waitlist and delivery status",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "notification_status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "pending",
+                "attempting",
+                "delivered",
+                "failed",
+                "blocked_configuration"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Submissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/WaitlistSubmission"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/outbox/{outbox_id}/retry": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Retry durable notification",
+        "security": [
+          {
+            "cookieAuth": [],
+            "csrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "outbox_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutboxRetry"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Retry queued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State or idempotency conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "tnk_live API key"
+      },
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-tenon_session"
+      },
+      "csrfToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "request_id",
+          "retryable"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/Error"
+          }
+        }
+      },
+      "Page": {
+        "type": "object",
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {}
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ActivationRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "token",
+          "password"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 32
+          },
+          "password": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 256
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "email",
+          "display_name",
+          "tenant_id",
+          "status",
+          "created_at",
+          "resource_version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "tenant_id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending_activation",
+              "active",
+              "disabled"
+            ]
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "customer",
+                "admin"
+              ]
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resource_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "WaitlistSubmissionCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "email",
+          "organization",
+          "task",
+          "robot_embodiment",
+          "inference_location"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "organization": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "website": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "task": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 4000
+          },
+          "robot_embodiment": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "teleop_hours": {
+            "type": "number",
+            "minimum": 0
+          },
+          "simulation_hours": {
+            "type": "number",
+            "minimum": 0
+          },
+          "inference_location": {
+            "enum": [
+              "cloud",
+              "local",
+              "both",
+              "unsure"
+            ]
+          },
+          "success_criteria": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "locale": {
+            "enum": [
+              "zh-CN",
+              "en"
+            ]
+          }
+        }
+      },
+      "WaitlistSubmission": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "submission_id",
+          "receipt_status",
+          "notification_status",
+          "created_at"
+        ],
+        "properties": {
+          "submission_id": {
+            "type": "string"
+          },
+          "receipt_status": {
+            "const": "accepted"
+          },
+          "notification_status": {
+            "enum": [
+              "pending",
+              "attempting",
+              "delivered",
+              "failed",
+              "blocked_configuration"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreditBalance": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "balance_microcredits",
+          "reserved_microcredits",
+          "available_microcredits",
+          "as_of"
+        ],
+        "properties": {
+          "balance_microcredits": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "reserved_microcredits": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "available_microcredits": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "APIKeyCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "scopes"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "scopes": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "read",
+                "write",
+                "control"
+              ]
+            }
+          }
+        }
+      },
+      "APIKey": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "prefix",
+          "scopes",
+          "created_at",
+          "revoked_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "read",
+                "write",
+                "control"
+              ]
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_used_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "revoked_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "APIKeyCreated": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "prefix",
+          "scopes",
+          "created_at",
+          "revoked_at",
+          "secret"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "read",
+                "write",
+                "control"
+              ]
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_used_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "revoked_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "secret": {
+            "type": "string",
+            "description": "Returned once."
+          }
+        }
+      },
+      "Capabilities": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "contract_version",
+          "base_models",
+          "training_methods",
+          "protocols",
+          "limits"
+        ],
+        "properties": {
+          "contract_version": {
+            "const": "0.1.0"
+          },
+          "base_models": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "training_methods": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "full_ft",
+                "lora"
+              ]
+            }
+          },
+          "protocols": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "tenon-control-v1",
+                "openpi-ws-v1"
+              ]
+            }
+          },
+          "execution_modes": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "synchronous_chunked",
+                "async_aligned",
+                "guided_rtc",
+                "trained_rtc"
+              ]
+            }
+          },
+          "limits": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "integer",
+                "number",
+                "string",
+                "boolean"
+              ]
+            }
+          },
+          "lora_profiles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "base_model",
+                "paligemma_rank",
+                "action_expert_rank",
+                "trainable_manifest_digest"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "base_model": {
+                  "type": "string"
+                },
+                "paligemma_rank": {
+                  "type": "integer"
+                },
+                "action_expert_rank": {
+                  "type": "integer"
+                },
+                "trainable_heads": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "trainable_manifest_digest": {
+                  "type": "string",
+                  "pattern": "^sha256:"
+                }
+              }
+            }
+          }
+        }
+      },
+      "PriceLine": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operation",
+          "accelerator_class",
+          "unit",
+          "unit_price_microcredits"
+        ],
+        "properties": {
+          "operation": {
+            "enum": [
+              "full_ft",
+              "lora",
+              "control_session"
+            ]
+          },
+          "accelerator_class": {
+            "type": "string"
+          },
+          "unit": {
+            "const": "gpu_millisecond"
+          },
+          "unit_price_microcredits": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "PricingCatalog": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "price_version",
+          "credit_scale",
+          "lines",
+          "effective_at"
+        ],
+        "properties": {
+          "price_version": {
+            "type": "string"
+          },
+          "credit_scale": {
+            "const": 1000000
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceLine"
+            }
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "storage_credit_billed": {
+            "const": false
+          }
+        }
+      },
+      "TrainingSpec": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dataset_version_id",
+          "base_model",
+          "method",
+          "preset",
+          "max_steps",
+          "max_runtime_seconds",
+          "seed",
+          "checkpoint_interval_steps"
+        ],
+        "properties": {
+          "dataset_version_id": {
+            "type": "string"
+          },
+          "base_model": {
+            "type": "string"
+          },
+          "method": {
+            "enum": [
+              "full_ft",
+              "lora"
+            ]
+          },
+          "preset": {
+            "type": "string"
+          },
+          "max_steps": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "max_runtime_seconds": {
+            "type": "integer",
+            "minimum": 60
+          },
+          "seed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "checkpoint_interval_steps": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "lora_profile": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "openpi-pi05-action-lora-v1",
+              null
+            ],
+            "description": "Required for method=lora and forbidden for full_ft. Profile pins PaliGemma r16, action expert r32, and declared trainable heads."
+          }
+        }
+      },
+      "ControlSessionSpec": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "deployment_id",
+          "duration_seconds",
+          "protocol",
+          "execution_mode",
+          "fallback"
+        ],
+        "properties": {
+          "deployment_id": {
+            "type": "string"
+          },
+          "duration_seconds": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 14400
+          },
+          "protocol": {
+            "enum": [
+              "tenon-control-v1",
+              "openpi-ws-v1"
+            ]
+          },
+          "execution_mode": {
+            "enum": [
+              "synchronous_chunked",
+              "async_aligned",
+              "guided_rtc",
+              "trained_rtc"
+            ]
+          },
+          "fallback": {
+            "$ref": "#/components/schemas/FallbackPolicy"
+          }
+        }
+      },
+      "QuoteRequest": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "spec"
+            ],
+            "properties": {
+              "kind": {
+                "const": "training_job"
+              },
+              "spec": {
+                "$ref": "#/components/schemas/TrainingSpec"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "spec"
+            ],
+            "properties": {
+              "kind": {
+                "const": "control_session"
+              },
+              "spec": {
+                "$ref": "#/components/schemas/ControlSessionSpec"
+              }
+            }
+          }
+        ]
+      },
+      "QuoteLine": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "unit",
+          "quantity_max",
+          "unit_price_microcredits"
+        ],
+        "properties": {
+          "unit": {
+            "const": "gpu_millisecond"
+          },
+          "quantity_max": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "unit_price_microcredits": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "Quote": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "price_version",
+          "expires_at",
+          "max_cost_microcredits",
+          "line_items",
+          "resolved_resources",
+          "request_hash"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "training_job",
+              "control_session"
+            ]
+          },
+          "price_version": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "max_cost_microcredits": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "line_items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuoteLine"
+            }
+          },
+          "resolved_resources": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "accelerator_model",
+              "accelerator_count"
+            ],
+            "properties": {
+              "accelerator_model": {
+                "type": "string"
+              },
+              "accelerator_count": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          },
+          "request_hash": {
+            "type": "string",
+            "pattern": "^sha256:"
+          }
+        }
+      },
+      "DatasetCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      },
+      "Dataset": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "description",
+          "created_at",
+          "updated_at",
+          "resource_version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resource_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "Channel": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "unit",
+          "lower",
+          "upper"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]*$"
+          },
+          "unit": {
+            "enum": [
+              "radian",
+              "radian_per_second",
+              "meter",
+              "meter_per_second",
+              "normalized_0_1",
+              "unitless"
+            ]
+          },
+          "lower": {
+            "type": "number"
+          },
+          "upper": {
+            "type": "number"
+          }
+        }
+      },
+      "Camera": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "required",
+          "accepted_encodings",
+          "color_space",
+          "max_width",
+          "max_height"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]*$"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "accepted_encodings": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "jpeg",
+                "png",
+                "raw_rgb8"
+              ]
+            }
+          },
+          "color_space": {
+            "const": "rgb"
+          },
+          "max_width": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "max_height": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "ImageTransform": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "target_width",
+          "target_height",
+          "resize_mode",
+          "color_space",
+          "dtype"
+        ],
+        "properties": {
+          "target_width": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "target_height": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "resize_mode": {
+            "enum": [
+              "pad",
+              "center_crop",
+              "stretch"
+            ]
+          },
+          "color_space": {
+            "const": "rgb"
+          },
+          "dtype": {
+            "const": "uint8"
+          }
+        }
+      },
+      "RobotSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema_version",
+          "controller_hz",
+          "state_channels",
+          "action_channels",
+          "action_semantics",
+          "cameras",
+          "image_transform",
+          "action_horizon_steps",
+          "max_committed_prefix_steps",
+          "transform_digest",
+          "normalization_digest"
+        ],
+        "properties": {
+          "schema_version": {
+            "const": "robot-schema-v1"
+          },
+          "controller_hz": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 500
+          },
+          "state_channels": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/Channel"
+            }
+          },
+          "action_channels": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/Channel"
+            }
+          },
+          "action_semantics": {
+            "enum": [
+              "joint_position",
+              "joint_delta",
+              "cartesian_delta"
+            ]
+          },
+          "cameras": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/Camera"
+            }
+          },
+          "image_transform": {
+            "$ref": "#/components/schemas/ImageTransform"
+          },
+          "action_horizon_steps": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 512
+          },
+          "max_committed_prefix_steps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 511
+          },
+          "transform_digest": {
+            "type": "string",
+            "pattern": "^sha256:"
+          },
+          "normalization_digest": {
+            "type": "string",
+            "pattern": "^sha256:"
+          }
+        }
+      },
+      "FileManifest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "relative_path",
+          "size_bytes",
+          "sha256",
+          "content_type"
+        ],
+        "properties": {
+          "relative_path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "size_bytes": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "content_type": {
+            "type": "string"
+          }
+        }
+      },
+      "DatasetVersionCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "format",
+          "kind",
+          "compatibility_profile",
+          "robot_schema",
+          "files"
+        ],
+        "properties": {
+          "format": {
+            "enum": [
+              "lerobot_v2",
+              "lerobot_v3"
+            ],
+            "description": "Native LeRobot v2 is accepted with tenon-native-v1; pi-partner-data-1caf4699 remains v3-only."
+          },
+          "kind": {
+            "enum": [
+              "demonstration",
+              "evaluation"
+            ]
+          },
+          "compatibility_profile": {
+            "enum": [
+              "tenon-native-v1",
+              "pi-partner-data-1caf4699"
+            ]
+          },
+          "robot_schema": {
+            "$ref": "#/components/schemas/RobotSchema"
+          },
+          "files": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100000,
+            "items": {
+              "$ref": "#/components/schemas/FileManifest"
+            }
+          },
+          "source_evaluation_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "format": {
+                  "const": "lerobot_v2"
+                }
+              },
+              "required": [
+                "format"
+              ]
+            },
+            "then": {
+              "properties": {
+                "compatibility_profile": {
+                  "const": "tenon-native-v1"
+                }
+              },
+              "required": [
+                "compatibility_profile"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "compatibility_profile": {
+                  "const": "pi-partner-data-1caf4699"
+                }
+              },
+              "required": [
+                "compatibility_profile"
+              ]
+            },
+            "then": {
+              "properties": {
+                "format": {
+                  "const": "lerobot_v3"
+                }
+              },
+              "required": [
+                "format"
+              ]
+            }
+          }
+        ]
+      },
+      "ValidationFinding": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "severity",
+          "code",
+          "path",
+          "message"
+        ],
+        "properties": {
+          "severity": {
+            "enum": [
+              "error",
+              "warning"
+            ]
+          },
+          "code": {
+            "type": "string"
+          },
+          "path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "DatasetVersion": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "dataset_id",
+          "format",
+          "kind",
+          "state",
+          "manifest_digest",
+          "schema_hash",
+          "upload_id",
+          "findings",
+          "created_at",
+          "updated_at",
+          "resource_version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "dataset_id": {
+            "type": "string"
+          },
+          "format": {
+            "enum": [
+              "lerobot_v2",
+              "lerobot_v3"
+            ],
+            "description": "Native LeRobot v2 is accepted with tenon-native-v1; pi-partner-data-1caf4699 remains v3-only."
+          },
+          "kind": {
+            "enum": [
+              "demonstration",
+              "evaluation"
+            ]
+          },
+          "state": {
+            "enum": [
+              "uploading",
+              "verifying",
+              "promoting",
+              "validating",
+              "ready",
+              "rejected",
+              "expired",
+              "aborted",
+              "deleting",
+              "deleted"
+            ]
+          },
+          "manifest_digest": {
+            "type": "string",
+            "pattern": "^sha256:"
+          },
+          "schema_hash": {
+            "type": "string",
+            "pattern": "^sha256:"
+          },
+          "upload_id": {
+            "type": "string"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationFinding"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resource_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "content_manifest_digest": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^sha256:",
+            "description": "Digest of promoted immutable content objects; non-null when ready."
+          }
+        }
+      },
+      "DatasetVersionCreated": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "version",
+          "upload"
+        ],
+        "properties": {
+          "version": {
+            "$ref": "#/components/schemas/DatasetVersion"
+          },
+          "upload": {
+            "$ref": "#/components/schemas/Upload"
+          }
+        }
+      },
+      "UploadFile": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "relative_path",
+          "size_bytes",
+          "sha256",
+          "mode",
+          "state"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "relative_path": {
+            "type": "string"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "single",
+              "multipart"
+            ]
+          },
+          "state": {
+            "enum": [
+              "pending",
+              "uploading",
+              "complete",
+              "failed"
+            ]
+          }
+        }
+      },
+      "Upload": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "dataset_version_id",
+          "state",
+          "expires_at",
+          "files",
+          "created_at",
+          "updated_at",
+          "resource_version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "dataset_version_id": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "open",
+              "completing",
+              "verified",
+              "expired",
+              "aborted",
+              "failed"
+            ]
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UploadFile"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resource_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "PartSignItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "file_id",
+          "part_number",
+          "content_length"
+        ],
+        "properties": {
+          "file_id": {
+            "type": "string"
+          },
+          "part_number": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "content_length": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          }
+        }
+      },
+      "UploadPartSignRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "parts"
+        ],
+        "properties": {
+          "parts": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 1000,
+            "items": {
+              "$ref": "#/components/schemas/PartSignItem"
+            }
+          }
+        }
+      },
+      "SignedPart": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "file_id",
+          "part_number",
+          "method",
+          "url",
+          "required_headers",
+          "expires_at"
+        ],
+        "properties": {
+          "file_id": {
+            "type": "string"
+          },
+          "part_number": {
+            "type": "integer"
+          },
+          "method": {
+            "const": "PUT"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "required_headers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UploadPartSignResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "parts"
+        ],
+        "properties": {
+          "parts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SignedPart"
+            }
+          }
+        }
+      },
+      "CompletedPart": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "part_number",
+          "etag"
+        ],
+        "properties": {
+          "part_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "etag": {
+            "type": "string"
+          }
+        }
+      },
+      "FileCompleteRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "parts"
+        ],
+        "properties": {
+          "parts": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/CompletedPart"
+            }
+          }
+        }
+      },
+      "TrainingJobCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dataset_version_id",
+          "base_model",
+          "method",
+          "preset",
+          "max_steps",
+          "max_runtime_seconds",
+          "seed",
+          "checkpoint_interval_steps",
+          "quote_id"
+        ],
+        "properties": {
+          "dataset_version_id": {
+            "type": "string"
+          },
+          "base_model": {
+            "type": "string"
+          },
+          "method": {
+            "enum": [
+              "full_ft",
+              "lora"
+            ]
+          },
+          "preset": {
+            "type": "string"
+          },
+          "max_steps": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "max_runtime_seconds": {
+            "type": "integer",
+            "minimum": 60
+          },
+          "seed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "checkpoint_interval_steps": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "quote_id": {
+            "type": "string"
+          },
+          "lora_profile": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "openpi-pi05-action-lora-v1",
+              null
+            ],
+            "description": "Required for method=lora and forbidden for full_ft. Profile pins PaliGemma r16, action expert r32, and declared trainable heads."
+          }
+        }
+      },
+      "TrainingProgress": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "phase",
+          "attempt",
+          "completed_steps",
+          "max_steps"
+        ],
+        "properties": {
+          "phase": {
+            "enum": [
+              "dataset_loading",
+              "normalizing",
+              "training",
+              "checkpointing",
+              "publishing"
+            ]
+          },
+          "attempt": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "completed_steps": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "max_steps": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "TrainingJob": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "state",
+          "spec",
+          "progress",
+          "checkpoint_ids",
+          "reservation_id",
+          "created_at",
+          "updated_at",
+          "resource_version",
+          "billable_gpu_milliseconds"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "queued",
+              "starting",
+              "running",
+              "recovering",
+              "canceling",
+              "canceled",
+              "succeeded",
+              "failed"
+            ]
+          },
+          "spec": {
+            "$ref": "#/components/schemas/TrainingSpec"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/TrainingProgress"
+          },
+          "checkpoint_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reservation_id": {
+            "type": "string"
+          },
+          "failure": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resource_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "billable_gpu_milliseconds": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Monotonic reconciled high-water usage; starting/setup is excluded."
+          }
+        }
+      },
+      "JobEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "seq",
+          "type",
+          "created_at",
+          "payload"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "seq": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "type": {
+            "enum": [
+              "queued",
+              "state_changed",
+              "progress",
+              "checkpoint_published",
+              "usage_reconciled",
+              "failed"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "CheckpointManifest": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "base_model",
+          "runtime_revision",
+          "method",
+          "dataset_version_id",
+          "robot_schema_hash",
+          "transform_digest",
+          "normalization_digest",
+          "artifacts"
+        ],
+        "properties": {
+          "base_model": {
+            "type": "string"
+          },
+          "runtime_revision": {
+            "type": "string"
+          },
+          "method": {
+            "enum": [
+              "full_ft",
+              "lora"
+            ]
+          },
+          "dataset_version_id": {
+            "type": "string"
+          },
+          "robot_schema_hash": {
+            "type": "string"
+          },
+          "transform_digest": {
+            "type": "string"
+          },
+          "normalization_digest": {
+            "type": "string"
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Artifact"
+            }
+          },
+          "lora_profile": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "trainable_manifest_digest": {
+            "type": "string",
+            "pattern": "^sha256:"
+          },
+          "trainable_parameter_count": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "adapter_ranks": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      },
+      "Artifact": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "size_bytes",
+          "sha256"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      },
+      "Checkpoint": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "training_job_id",
+          "step",
+          "kind",
+          "state",
+          "manifest",
+          "exportable",
+          "created_at",
+          "updated_at",
+          "resource_version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "training_job_id": {
+            "type": "string"
+          },
+          "step": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "kind": {
+            "enum": [
+              "intermediate",
+              "final"
+            ]
+          },
+          "state": {
+            "enum": [
+              "publishing",
+              "ready",
+              "failed",
+              "deleting",
+              "deleted"
+            ]
+          },
+          "manifest": {
+            "$ref": "#/components/schemas/CheckpointManifest"
+          },
+          "exportable": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resource_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "DownloadURL": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "url",
+          "expires_at"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "FallbackPolicy": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "mode",
+          "hold_steps",
+          "hold_behavior"
+        ],
+        "properties": {
+          "mode": {
+            "enum": [
+              "immediate_stop",
+              "drain_then_hold"
+            ]
+          },
+          "hold_steps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 500
+          },
+          "hold_behavior": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/HoldBehavior"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "DeploymentCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "checkpoint_id",
+          "name",
+          "robot_schema",
+          "default_prompt",
+          "protocols",
+          "execution_modes",
+          "fallback",
+          "warm_idle_seconds"
+        ],
+        "properties": {
+          "checkpoint_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "robot_schema": {
+            "$ref": "#/components/schemas/RobotSchema"
+          },
+          "default_prompt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2000
+          },
+          "protocols": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "tenon-control-v1",
+                "openpi-ws-v1"
+              ]
+            }
+          },
+          "execution_modes": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "synchronous_chunked",
+                "async_aligned",
+                "guided_rtc",
+                "trained_rtc"
+              ]
+            }
+          },
+          "fallback": {
+            "$ref": "#/components/schemas/FallbackPolicy"
+          },
+          "warm_idle_seconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3600
+          }
+        }
+      },
+      "Deployment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "checkpoint_id",
+          "state",
+          "runtime_state",
+          "schema_hash",
+          "protocols",
+          "execution_modes",
+          "fallback",
+          "created_at",
+          "updated_at",
+          "resource_version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "checkpoint_id": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "creating",
+              "ready",
+              "failed",
+              "draining",
+              "stopped"
+            ]
+          },
+          "runtime_state": {
+            "enum": [
+              "cold",
+              "warming",
+              "warm",
+              "cooling",
+              "error"
+            ]
+          },
+          "schema_hash": {
+            "type": "string",
+            "pattern": "^sha256:"
+          },
+          "protocols": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "tenon-control-v1",
+                "openpi-ws-v1"
+              ]
+            }
+          },
+          "execution_modes": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "synchronous_chunked",
+                "async_aligned",
+                "guided_rtc",
+                "trained_rtc"
+              ]
+            }
+          },
+          "fallback": {
+            "$ref": "#/components/schemas/FallbackPolicy"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resource_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "ControlSessionCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "deployment_id",
+          "duration_seconds",
+          "protocol",
+          "execution_mode",
+          "fallback",
+          "quote_id"
+        ],
+        "properties": {
+          "deployment_id": {
+            "type": "string"
+          },
+          "duration_seconds": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 14400
+          },
+          "protocol": {
+            "enum": [
+              "tenon-control-v1",
+              "openpi-ws-v1"
+            ]
+          },
+          "execution_mode": {
+            "enum": [
+              "synchronous_chunked",
+              "async_aligned",
+              "guided_rtc"
+            ]
+          },
+          "fallback": {
+            "$ref": "#/components/schemas/FallbackPolicy"
+          },
+          "quote_id": {
+            "type": "string"
+          }
+        }
+      },
+      "ControlSession": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "deployment_id",
+          "state",
+          "connection_state",
+          "protocol",
+          "execution_mode",
+          "duration_seconds",
+          "reservation_id",
+          "created_at",
+          "updated_at",
+          "resource_version",
+          "queue_expires_at",
+          "billable_gpu_milliseconds"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "deployment_id": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "queued",
+              "admitting",
+              "active",
+              "closing",
+              "closed",
+              "canceled",
+              "queue_expired",
+              "failed",
+              "expired"
+            ]
+          },
+          "connection_state": {
+            "enum": [
+              "never_connected",
+              "connected",
+              "disconnected_grace",
+              "rearm_required"
+            ]
+          },
+          "protocol": {
+            "enum": [
+              "tenon-control-v1",
+              "openpi-ws-v1"
+            ]
+          },
+          "execution_mode": {
+            "enum": [
+              "synchronous_chunked",
+              "async_aligned",
+              "guided_rtc",
+              "trained_rtc"
+            ]
+          },
+          "duration_seconds": {
+            "type": "integer"
+          },
+          "active_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Active duration begins here."
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "active_at + duration_seconds; null until admitted."
+          },
+          "reservation_id": {
+            "type": "string"
+          },
+          "close_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resource_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "queue_expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Admission deadline; independent of active duration."
+          },
+          "billable_gpu_milliseconds": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "ControlConnection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "wss_url",
+          "token",
+          "expires_at",
+          "protocol"
+        ],
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "protocol": {
+            "enum": [
+              "tenon-control-v1",
+              "openpi-ws-v1"
+            ]
+          },
+          "wss_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Opaque negotiated inference endpoint; not derived from REST origin."
+          }
+        }
+      },
+      "EvaluationSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "episode_count",
+          "success_count"
+        ],
+        "properties": {
+          "episode_count": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "success_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "mean_episode_seconds": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          }
+        }
+      },
+      "EvaluationCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dataset_version_id",
+          "checkpoint_id",
+          "deployment_id",
+          "summary"
+        ],
+        "properties": {
+          "dataset_version_id": {
+            "type": "string"
+          },
+          "checkpoint_id": {
+            "type": "string"
+          },
+          "deployment_id": {
+            "type": "string"
+          },
+          "control_session_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary": {
+            "$ref": "#/components/schemas/EvaluationSummary"
+          },
+          "labels": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "maxLength": 100
+            }
+          }
+        }
+      },
+      "Evaluation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "state",
+          "dataset_version_id",
+          "checkpoint_id",
+          "deployment_id",
+          "summary",
+          "labels",
+          "created_at",
+          "updated_at",
+          "resource_version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "processing",
+              "ready",
+              "failed"
+            ]
+          },
+          "dataset_version_id": {
+            "type": "string"
+          },
+          "checkpoint_id": {
+            "type": "string"
+          },
+          "deployment_id": {
+            "type": "string"
+          },
+          "control_session_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary": {
+            "$ref": "#/components/schemas/EvaluationSummary"
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "failure": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resource_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "AdminUserCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "email",
+          "display_name",
+          "tenant_name",
+          "initial_credit_microcredits"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "tenant_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "initial_credit_microcredits": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "activation_delivery": {
+            "enum": [
+              "email",
+              "manual"
+            ]
+          }
+        }
+      },
+      "AdminUserCreated": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "user",
+          "activation_expires_at",
+          "notification_status"
+        ],
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "activation_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Returned only for manual delivery."
+          },
+          "activation_expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "notification_status": {
+            "enum": [
+              "pending",
+              "delivered",
+              "failed",
+              "blocked_configuration",
+              "manual"
+            ]
+          }
+        }
+      },
+      "CreditAdjustment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "delta_microcredits",
+          "reason"
+        ],
+        "properties": {
+          "delta_microcredits": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        }
+      },
+      "OutboxRetry": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "Ack": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "enum": [
+              "accepted",
+              "closing",
+              "aborted",
+              "deleted",
+              "revoked"
+            ]
+          }
+        }
+      },
+      "HoldBehavior": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "preserve_channels"
+            ],
+            "properties": {
+              "type": {
+                "const": "zero_delta_preserve"
+              },
+              "preserve_channels": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "preserve_channels"
+            ],
+            "properties": {
+              "type": {
+                "const": "last_applied_absolute_target"
+              },
+              "preserve_channels": {
+                "type": "array",
+                "maxItems": 0,
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "SessionBootstrap": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "email",
+          "display_name",
+          "tenant_id",
+          "status",
+          "created_at",
+          "resource_version",
+          "csrf_token"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "tenant_id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending_activation",
+              "active",
+              "disabled"
+            ]
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "customer",
+                "admin"
+              ]
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resource_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "csrf_token": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Opaque in-memory token for cookie auth; null for API-key auth."
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    },
+    {
+      "cookieAuth": []
+    }
+  ],
+  "x-contract-status": "approved-for-implementation",
+  "x-websocket-contract": "docs/api-contract.md#8-native-control-websocket-protocol",
+  "x-inference-endpoint": "Negotiated per control connection; may be a separately approved WSS origin.",
+  "x-approval": {
+    "approved_by": "main-agent-supervisor",
+    "approved_on": "2026-10-14",
+    "source_commit": "b644badcd8edc2a97170755a5bb10ead20879107",
+    "scope": "API design only; no implementation, availability, performance, billing correctness, or hosted-PI conformance claim."
+  },
+  "x-spa-session-bootstrap": {
+    "endpoint": "GET /me",
+    "shape": "flat approved User fields plus top-level csrf_token",
+    "csrf": "opaque string for cookie auth; null for API-key auth",
+    "cache_control": "no-store",
+    "origin_policy": "no cross-origin credentialed reads; browser login/activation Origin validated",
+    "client_storage": "memory only; clear on 401; no metadata fallback"
+  },
+  "x-dataset-format-extension": {
+    "status": "main-approved additive extension",
+    "compatibility": "Existing lerobot_v3 requests unchanged. lerobot_v2 requires tenon-native-v1. pi-partner-data-1caf4699 remains lerobot_v3-only.",
+    "no_new_fields": true
+  }
+}

@@ -1,0 +1,215 @@
+{
+  "notice": "Contract fixtures only. They do not describe a deployed service or successful run.",
+  "session_bootstrap": {
+    "id": "usr_fixture",
+    "email": "fixture@example.invalid",
+    "display_name": "Fixture User",
+    "tenant_id": "ten_fixture",
+    "status": "active",
+    "roles": [
+      "customer"
+    ],
+    "created_at": "2026-10-14T12:00:00Z",
+    "resource_version": 1,
+    "csrf_token": null
+  },
+  "dataset": {
+    "id": "dst_fixture",
+    "name": "fixture dataset",
+    "description": "contract test",
+    "created_at": "2026-10-14T12:00:00Z",
+    "updated_at": "2026-10-14T12:00:00Z",
+    "resource_version": 1
+  },
+  "dataset_version": {
+    "id": "dsv_fixture",
+    "dataset_id": "dst_fixture",
+    "format": "lerobot_v3",
+    "kind": "demonstration",
+    "state": "ready",
+    "manifest_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "schema_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "upload_id": "upl_fixture",
+    "findings": [],
+    "created_at": "2026-10-14T12:00:00Z",
+    "updated_at": "2026-10-14T12:01:00Z",
+    "resource_version": 5,
+    "content_manifest_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "upload": {
+    "id": "upl_fixture",
+    "dataset_version_id": "dsv_fixture",
+    "state": "open",
+    "expires_at": "2026-10-15T12:00:00Z",
+    "files": [
+      {
+        "id": "fil_fixture",
+        "relative_path": "meta/info.json",
+        "size_bytes": 11,
+        "sha256": "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9",
+        "mode": "single",
+        "state": "pending"
+      }
+    ],
+    "created_at": "2026-10-14T12:00:00Z",
+    "updated_at": "2026-10-14T12:00:00Z",
+    "resource_version": 1
+  },
+  "quote": {
+    "id": "quo_fixture",
+    "kind": "training_job",
+    "price_version": "fixture.1",
+    "expires_at": "2026-10-14T13:00:00Z",
+    "max_cost_microcredits": 5000000,
+    "line_items": [
+      {
+        "unit": "gpu_millisecond",
+        "quantity_max": 50000,
+        "unit_price_microcredits": 100
+      }
+    ],
+    "resolved_resources": {
+      "accelerator_model": "fixture-accelerator",
+      "accelerator_count": 1
+    },
+    "request_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  },
+  "training_job": {
+    "id": "trn_fixture",
+    "state": "queued",
+    "spec": {
+      "dataset_version_id": "dsv_fixture",
+      "base_model": "openpi/pi05-base",
+      "method": "full_ft",
+      "preset": "balanced-v1",
+      "max_steps": 100,
+      "max_runtime_seconds": 7200,
+      "seed": 42,
+      "checkpoint_interval_steps": 100,
+      "lora_profile": null
+    },
+    "progress": {
+      "phase": "dataset_loading",
+      "attempt": 1,
+      "completed_steps": 0,
+      "max_steps": 100
+    },
+    "checkpoint_ids": [],
+    "reservation_id": "res_fixture",
+    "failure": null,
+    "created_at": "2026-10-14T12:00:00Z",
+    "updated_at": "2026-10-14T12:00:00Z",
+    "resource_version": 1,
+    "billable_gpu_milliseconds": 0
+  },
+  "checkpoint": {
+    "id": "ckp_fixture",
+    "training_job_id": "trn_fixture",
+    "step": 99,
+    "kind": "final",
+    "state": "ready",
+    "manifest": {
+      "base_model": "openpi/pi05-base",
+      "runtime_revision": "openpi@fixture",
+      "method": "full_ft",
+      "dataset_version_id": "dsv_fixture",
+      "robot_schema_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "transform_digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "normalization_digest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "artifacts": [
+        {
+          "name": "params",
+          "size_bytes": 123,
+          "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+        }
+      ]
+    },
+    "exportable": false,
+    "created_at": "2026-10-14T12:00:00Z",
+    "updated_at": "2026-10-14T12:00:00Z",
+    "resource_version": 1
+  },
+  "deployment": {
+    "id": "dep_fixture",
+    "name": "fixture deployment",
+    "checkpoint_id": "ckp_fixture",
+    "state": "ready",
+    "runtime_state": "cold",
+    "schema_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "protocols": [
+      "tenon-control-v1"
+    ],
+    "execution_modes": [
+      "async_aligned"
+    ],
+    "fallback": {
+      "mode": "drain_then_hold",
+      "hold_steps": 5,
+      "hold_behavior": {
+        "type": "zero_delta_preserve",
+        "preserve_channels": [
+          "gripper"
+        ]
+      }
+    },
+    "created_at": "2026-10-14T12:00:00Z",
+    "updated_at": "2026-10-14T12:00:00Z",
+    "resource_version": 1
+  },
+  "control_session": {
+    "id": "ctl_fixture",
+    "deployment_id": "dep_fixture",
+    "state": "active",
+    "connection_state": "never_connected",
+    "protocol": "tenon-control-v1",
+    "execution_mode": "async_aligned",
+    "duration_seconds": 600,
+    "active_at": "2026-10-14T12:00:00Z",
+    "expires_at": "2026-10-14T12:10:00Z",
+    "reservation_id": "res_control_fixture",
+    "close_reason": null,
+    "created_at": "2026-10-14T11:59:00Z",
+    "updated_at": "2026-10-14T12:00:00Z",
+    "resource_version": 3,
+    "queue_expires_at": "2026-10-14T12:14:00Z",
+    "billable_gpu_milliseconds": 0
+  },
+  "control_connection": {
+    "wss_url": "wss://inference.fixture.invalid/v1/control/sessions/ctl_fixture",
+    "token": "fixture-connection-token",
+    "expires_at": "2026-10-14T12:01:00Z",
+    "protocol": "tenon-control-v1"
+  },
+  "evaluation": {
+    "id": "evl_fixture",
+    "state": "ready",
+    "dataset_version_id": "dsv_eval_fixture",
+    "checkpoint_id": "ckp_fixture",
+    "deployment_id": "dep_fixture",
+    "control_session_id": "ctl_fixture",
+    "summary": {
+      "episode_count": 10,
+      "success_count": 8,
+      "mean_episode_seconds": 20.0
+    },
+    "labels": [
+      "fixture",
+      "simulator"
+    ],
+    "failure": null,
+    "created_at": "2026-10-14T12:00:00Z",
+    "updated_at": "2026-10-14T12:00:00Z",
+    "resource_version": 1
+  },
+  "error": {
+    "error": {
+      "code": "insufficient_credits",
+      "message": "Fixture balance is insufficient.",
+      "request_id": "req_fixture",
+      "retryable": false,
+      "details": {
+        "available_microcredits": 1
+      }
+    }
+  }
+}

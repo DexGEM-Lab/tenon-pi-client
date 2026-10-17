@@ -1,0 +1,208 @@
+{
+  "descriptor_version": "tenon-openpi-libero-transform-v1",
+  "openpi_revision": "215abfb217dbac7d5f1273282331b9b1866c0479",
+  "policy_config": {
+    "name": "pi05_libero",
+    "base_model": "openpi/pi05-libero",
+    "pi05": true,
+    "action_dim": 32,
+    "action_horizon": 10,
+    "discrete_state_input": false,
+    "extra_delta_transform": false,
+    "normalization": "quantile"
+  },
+  "runtime": {
+    "controller_hz": 20,
+    "dataset_metadata_fps": 10,
+    "dataset_timestamp_semantics": "synthetic frame_index / 10 after irregular no-op filtering",
+    "implicit_resampling": false,
+    "replan_steps_reference": 5
+  },
+  "observation": {
+    "state": {
+      "shape": [
+        8
+      ],
+      "dtype": "float32",
+      "channels": [
+        {
+          "name": "eef_x",
+          "unit": "meter"
+        },
+        {
+          "name": "eef_y",
+          "unit": "meter"
+        },
+        {
+          "name": "eef_z",
+          "unit": "meter"
+        },
+        {
+          "name": "eef_rx",
+          "unit": "radian"
+        },
+        {
+          "name": "eef_ry",
+          "unit": "radian"
+        },
+        {
+          "name": "eef_rz",
+          "unit": "radian"
+        },
+        {
+          "name": "gripper_qpos_0",
+          "unit": "meter"
+        },
+        {
+          "name": "gripper_qpos_1",
+          "unit": "meter"
+        }
+      ],
+      "construction": "concat(robot0_eef_pos, quat_xyzw_to_axis_angle(robot0_eef_quat), robot0_gripper_qpos)",
+      "model_padding": "right-pad with zeros to 32"
+    },
+    "cameras": [
+      {
+        "camera_id": "base",
+        "source_key": "agentview_image",
+        "model_slot": "base_0_rgb",
+        "required": true
+      },
+      {
+        "camera_id": "left_wrist",
+        "source_key": "robot0_eye_in_hand_image",
+        "model_slot": "left_wrist_0_rgb",
+        "required": true
+      }
+    ],
+    "unused_model_camera": {
+      "model_slot": "right_wrist_0_rgb",
+      "value": "zeros_like(base_0_rgb)",
+      "mask": false
+    },
+    "image_transform": {
+      "source_shape": [
+        256,
+        256,
+        3
+      ],
+      "source_orientation": "rotate_180_degrees",
+      "target_shape": [
+        224,
+        224,
+        3
+      ],
+      "resize_mode": "pad",
+      "color_space": "rgb",
+      "dtype": "uint8"
+    },
+    "prompt": "LIBERO task language string"
+  },
+  "action": {
+    "shape": [
+      7
+    ],
+    "dtype": "float32",
+    "semantics": "cartesian_delta",
+    "channels": [
+      {
+        "name": "delta_x",
+        "unit": "unitless",
+        "controller_scale": "0.05 meter"
+      },
+      {
+        "name": "delta_y",
+        "unit": "unitless",
+        "controller_scale": "0.05 meter"
+      },
+      {
+        "name": "delta_z",
+        "unit": "unitless",
+        "controller_scale": "0.05 meter"
+      },
+      {
+        "name": "delta_rx",
+        "unit": "unitless",
+        "controller_scale": "0.5 radian rotation-vector component"
+      },
+      {
+        "name": "delta_ry",
+        "unit": "unitless",
+        "controller_scale": "0.5 radian rotation-vector component"
+      },
+      {
+        "name": "delta_rz",
+        "unit": "unitless",
+        "controller_scale": "0.5 radian rotation-vector component"
+      },
+      {
+        "name": "gripper",
+        "unit": "unitless",
+        "range": [
+          -1.0,
+          1.0
+        ]
+      }
+    ],
+    "model_output": "take first 7 dimensions after unnormalization",
+    "output_projection": {
+      "type": "componentwise_clip",
+      "stage": "after_unnormalization_and_dimension_trim",
+      "lower": [
+        -1.0,
+        -1.0,
+        -1.0,
+        -1.0,
+        -1.0,
+        -1.0,
+        -1.0
+      ],
+      "upper": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "applies_to": [
+        "synchronous_chunked",
+        "async_aligned",
+        "guided_rtc"
+      ],
+      "committed_prefix_space": "actually_applied_projected_commands",
+      "raw_flow_sampler_unchanged": true,
+      "controller_equivalence": {
+        "library": "robosuite",
+        "version": "1.4.1",
+        "controller": "OSC_POSE",
+        "gripper": "PandaGripper.format_action uses sign(action); clipping a finite scalar to [-1,1] preserves its sign and the complete recurrent gripper command sequence",
+        "motion": "Controller.scale_action clips each of six inputs to [-1,1] before applying the configured affine scales",
+        "motion_source": "robosuite/controllers/base_controller.py:Controller.scale_action",
+        "gripper_source": "robosuite/models/grippers/panda_gripper.py:PandaGripper.format_action",
+        "actuator_source": "robosuite/robots/manipulator.py:Manipulator.grip_action",
+        "source_sha256": {
+          "robosuite/controllers/base_controller.py": "61f99a2daeb4eb6e39bfb996d94c5a5689ef3bc771d030d070193ea56d6a8332",
+          "robosuite/controllers/osc.py": "cfa62a0e719bc53ef0c701efa66f7b3e2272d4fca2150ec73c05bb145eba85cb",
+          "robosuite/controllers/config/osc_pose.json": "07f3a8b41d3eecc8a36700a85bd8207ee3fbc36eb73f6a2248340c96770d1e45",
+          "robosuite/models/grippers/panda_gripper.py": "a3760a8fc4599fa6f79914304b82466f3c1bda1a945943ca693bb57f00dc59eb",
+          "robosuite/robots/manipulator.py": "d37ff4c00112cfba9bf4b96bf48ad5664422fd824dd4fbcd1eebda650a451b64"
+        }
+      }
+    }
+  },
+  "provenance": {
+    "checkpoint": "gs://openpi-assets/checkpoints/pi05_libero",
+    "normalization_asset": "gs://openpi-assets/checkpoints/pi05_libero/assets/physical-intelligence/libero/norm_stats.json",
+    "normalization_sha256": "b3a44bb2810436fb62917decaea58bd4d9110255df527dea21e8fd40c960bd84",
+    "dataset": "physical-intelligence/libero@a4336d589d589045d1c56423ffdf3b88a0e19b1f",
+    "openpi_config_source": "src/openpi/training/config.py:pi05_libero",
+    "openpi_policy_source": "src/openpi/policies/libero_policy.py",
+    "openpi_rollout_source": "examples/libero/main.py"
+  },
+  "protocol_output": {
+    "tenon-control-v1": "projected",
+    "openpi-ws-v1": "raw"
+  }
+}

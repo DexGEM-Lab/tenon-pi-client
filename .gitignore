@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+.env
+*.pem
+*.key
+libero10-mini-source/
+
+# Local lifecycle journals, secrets and user data are never source.
+.tenon/
+.env
+.env.*
+connection*.json

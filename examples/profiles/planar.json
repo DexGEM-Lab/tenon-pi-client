@@ -1,0 +1,155 @@
+{
+  "profile_version": "tenon-robot-profile-v1",
+  "profile_id": "synthetic-planar-v1",
+  "calibration_digest": "sha256:5a43b57385530ee19f3a50904e0f3152b1786404d5ab3923b480a1c810d80c6d",
+  "state": {
+    "native": [
+      {
+        "name": "base_angle",
+        "unit": "degree",
+        "lower": -90.0,
+        "upper": 90.0
+      },
+      {
+        "name": "elbow_angle",
+        "unit": "degree",
+        "lower": -90.0,
+        "upper": 90.0
+      },
+      {
+        "name": "jaw_open",
+        "unit": "open_percent",
+        "lower": 0.0,
+        "upper": 100.0
+      }
+    ],
+    "canonical": [
+      {
+        "name": "elbow",
+        "unit": "radian",
+        "native_index": 1,
+        "conversion": "degrees_to_radians",
+        "constant": null,
+        "native_closed": null,
+        "native_open": null
+      },
+      {
+        "name": "base",
+        "unit": "radian",
+        "native_index": 0,
+        "conversion": "degrees_to_radians",
+        "constant": null,
+        "native_closed": null,
+        "native_open": null
+      },
+      {
+        "name": "virtual_axis",
+        "unit": "radian",
+        "native_index": null,
+        "conversion": "constant",
+        "constant": 0.0,
+        "native_closed": null,
+        "native_open": null
+      },
+      {
+        "name": "grip",
+        "unit": "normalized_0_1",
+        "native_index": 2,
+        "conversion": "gripper_closedness",
+        "constant": null,
+        "native_closed": 0.0,
+        "native_open": 100.0
+      }
+    ]
+  },
+  "action": {
+    "native": [
+      {
+        "name": "base_angle",
+        "unit": "degree",
+        "lower": -90.0,
+        "upper": 90.0
+      },
+      {
+        "name": "elbow_angle",
+        "unit": "degree",
+        "lower": -90.0,
+        "upper": 90.0
+      },
+      {
+        "name": "jaw_open",
+        "unit": "open_percent",
+        "lower": 0.0,
+        "upper": 100.0
+      }
+    ],
+    "canonical": [
+      {
+        "name": "elbow",
+        "unit": "radian",
+        "native_index": 1,
+        "conversion": "degrees_to_radians",
+        "constant": null,
+        "native_closed": null,
+        "native_open": null
+      },
+      {
+        "name": "base",
+        "unit": "radian",
+        "native_index": 0,
+        "conversion": "degrees_to_radians",
+        "constant": null,
+        "native_closed": null,
+        "native_open": null
+      },
+      {
+        "name": "virtual_axis",
+        "unit": "radian",
+        "native_index": null,
+        "conversion": "constant",
+        "constant": 0.0,
+        "native_closed": null,
+        "native_open": null
+      },
+      {
+        "name": "grip",
+        "unit": "normalized_0_1",
+        "native_index": 2,
+        "conversion": "gripper_closedness",
+        "constant": null,
+        "native_closed": 0.0,
+        "native_open": 100.0
+      }
+    ]
+  },
+  "action_semantics": "joint_position",
+  "controller_hz": 20.0,
+  "cameras": [
+    {
+      "id": "view_0",
+      "width": 64,
+      "height": 48,
+      "serial": "synthetic-0",
+      "mount": "synthetic-view-0",
+      "capture_clock": "synthetic-monotonic",
+      "rotation_degrees": 0.0,
+      "calibration_digest": "sha256:5a43b57385530ee19f3a50904e0f3152b1786404d5ab3923b480a1c810d80c6d"
+    }
+  ],
+  "image_transform": {
+    "target_width": 224,
+    "target_height": 224,
+    "resize_mode": "pad"
+  },
+  "action_horizon_steps": 4,
+  "max_committed_prefix_steps": 1,
+  "model_state_width": 8,
+  "model_action_width": 8,
+  "output_projection": "strict",
+  "model_delta_state_indices": [
+    0,
+    1,
+    null,
+    null
+  ]
+}
