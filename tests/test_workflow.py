@@ -72,14 +72,22 @@ def test_libero_recipe_is_resolved_without_user_preset():
     )
 
 
+@pytest.mark.parametrize("mode", ["async_aligned", "trained_rtc"])
 @pytest.mark.parametrize("failure", [None, "deployment", "session", "checkpoint"])
 def test_deploy_reuses_exact_lineage_and_never_upgrades_terminal_state(
-    tmp_path, contract_fixtures, failure
+    tmp_path, contract_fixtures, failure, mode
 ):
     fixtures = deepcopy(contract_fixtures)
     schema = example_profile().robot_schema("sha256:" + "f" * 64)
     checkpoint = fixtures["checkpoint"]
     checkpoint["manifest"]["transform_digest"] = schema.transform_digest
+    if mode == "trained_rtc":
+        from test_trained_rtc import rtc_metadata
+
+        fixtures["training_job"]["spec"].update(effective_batch_size=8, training_mode="wan_rtc")
+        checkpoint["manifest"].update(
+            effective_batch_size=8, training_mode="wan_rtc", rtc_config=rtc_metadata(schema)
+        )
     calls = []
 
     class Client:
@@ -87,6 +95,11 @@ def test_deploy_reuses_exact_lineage_and_never_upgrades_terminal_state(
 
         def me(self):
             return SimpleNamespace(id="user-example")
+
+        def capabilities(self):
+            return SimpleNamespace(
+                execution_modes=[mode], base_models=[checkpoint["manifest"]["base_model"]]
+            )
 
         def get_checkpoint(self, identifier):
             value = deepcopy(checkpoint)
@@ -104,7 +117,7 @@ def test_deploy_reuses_exact_lineage_and_never_upgrades_terminal_state(
             value.update(
                 state="failed" if failure == "deployment" else "ready",
                 fallback=self.fallback.model_dump(mode="json"),
-                execution_modes=["async_aligned"],
+                execution_modes=[mode],
             )
             return Deployment.model_validate(value)
 
@@ -121,6 +134,7 @@ def test_deploy_reuses_exact_lineage_and_never_upgrades_terminal_state(
             value = {
                 **fixtures["control_session"],
                 "state": "expired" if failure == "session" else "active",
+                "execution_mode": mode,
             }
             return ControlSession.model_validate(value)
 
@@ -134,7 +148,7 @@ def test_deploy_reuses_exact_lineage_and_never_upgrades_terminal_state(
         kwargs = dict(
             name="policy",
             prompt="place block",
-            execution_mode="async_aligned",
+            execution_mode=mode,
             duration_seconds=300,
             max_cost_microcredits=5_000_000,
             approve=lambda quote: None,
@@ -165,13 +179,22 @@ def test_checkpoint_readiness_requires_exact_source_binding(contract_fixtures):
         )
 
 
-def test_lost_training_create_replays_without_second_credit_approval(tmp_path, contract_fixtures):
+@pytest.mark.parametrize("pilot", [False, True])
+def test_lost_training_create_replays_without_second_credit_approval(
+    tmp_path, contract_fixtures, pilot
+):
     from tenon_pi.models import DatasetFormat, DatasetVersion, TrainingJob, TrainingMethod
     from tenon_pi.workflow import run_training
 
     schema = example_profile().robot_schema("sha256:" + "f" * 64)
     fixtures = deepcopy(contract_fixtures)
     fixtures["checkpoint"]["manifest"]["transform_digest"] = schema.transform_digest
+    additions = {"effective_batch_size": 8, "training_mode": "wan_rtc"} if pilot else {}
+    if pilot:
+        from test_trained_rtc import rtc_metadata
+
+        fixtures["training_job"]["spec"].update(additions)
+        fixtures["checkpoint"]["manifest"].update(**additions, rtc_config=rtc_metadata(schema))
     approvals, keys = [], []
 
     class Client:
@@ -227,6 +250,7 @@ def test_lost_training_create_replays_without_second_credit_approval(tmp_path, c
         preset=None,
         max_cost_microcredits=5_000_000,
         approve=approve,
+        **additions,
     )
     with RunContext(context) as journal:
         journal.set("dataset_id", "dst_fixture")
