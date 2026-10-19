@@ -64,7 +64,7 @@ class FakeBackend:
             )
         )
         prefix = request.committed_prefix
-        if self.mode == ExecutionMode.GUIDED_RTC:
+        if self.mode in {ExecutionMode.GUIDED_RTC, ExecutionMode.TRAINED_RTC}:
             assert prefix is not None
         else:
             assert prefix is None
@@ -78,7 +78,11 @@ class FakeBackend:
             generation_mode=self.mode.value,
             prefix_consumed_count=(prefix.count if prefix is not None else None),
             committed_prefix_sha256=(prefix.sha256 if prefix is not None else None),
-            sampler_conditioning=("guided" if prefix is not None else None),
+            sampler_conditioning=(
+                ("trained" if self.mode == ExecutionMode.TRAINED_RTC else "guided")
+                if prefix is not None
+                else None
+            ),
         )
 
     def reset(self, *, epoch: int, reset_index: int, reason: str) -> int:
@@ -263,10 +267,11 @@ def test_async_actuator_override_updates_truth_without_claiming_a_guided_prefix(
     np.testing.assert_array_equal(runtime.fallback.last_applied, [4.0, 0.5])
 
 
-def test_guided_rtc_sends_exact_float32_prefix_and_preserves_it_before_splice():
-    backend = FakeBackend(mode=ExecutionMode.GUIDED_RTC)
+@pytest.mark.parametrize("mode", [ExecutionMode.GUIDED_RTC, ExecutionMode.TRAINED_RTC])
+def test_guided_rtc_sends_exact_float32_prefix_and_preserves_it_before_splice(mode):
+    backend = FakeBackend(mode=mode)
     executor = ManualExecutor()
-    runtime = controller(backend, executor, mode=ExecutionMode.GUIDED_RTC)
+    runtime = controller(backend, executor, mode=mode)
     warm(runtime)
     sequence = []
     observation_index = 3
@@ -291,7 +296,7 @@ def test_guided_rtc_sends_exact_float32_prefix_and_preserves_it_before_splice():
 
     replacement = FakeBackend(
         offset=100,
-        mode=ExecutionMode.GUIDED_RTC,
+        mode=mode,
     ).infer(executor.request)
     assert executor.future is not None
     executor.future.set_result(replacement)
@@ -314,10 +319,11 @@ def test_guided_rtc_sends_exact_float32_prefix_and_preserves_it_before_splice():
     assert runtime.metrics.accepted_responses == 1
 
 
-def test_guided_mode_mismatch_is_dropped_instead_of_relabeled():
-    backend = FakeBackend(mode=ExecutionMode.GUIDED_RTC)
+@pytest.mark.parametrize("mode", [ExecutionMode.GUIDED_RTC, ExecutionMode.TRAINED_RTC])
+def test_guided_mode_mismatch_is_dropped_instead_of_relabeled(mode):
+    backend = FakeBackend(mode=mode)
     executor = ManualExecutor()
-    runtime = controller(backend, executor, mode=ExecutionMode.GUIDED_RTC)
+    runtime = controller(backend, executor, mode=mode)
     warm(runtime)
     observation_index = 3
     for action_index in range(6):
@@ -339,10 +345,11 @@ def test_guided_mode_mismatch_is_dropped_instead_of_relabeled():
     assert runtime.metrics.dropped_responses == 1
 
 
-def test_guided_prefix_hash_mismatch_drops_entire_response():
-    backend = FakeBackend(mode=ExecutionMode.GUIDED_RTC)
+@pytest.mark.parametrize("mode", [ExecutionMode.GUIDED_RTC, ExecutionMode.TRAINED_RTC])
+def test_guided_prefix_hash_mismatch_drops_entire_response(mode):
+    backend = FakeBackend(mode=mode)
     executor = ManualExecutor()
-    runtime = controller(backend, executor, mode=ExecutionMode.GUIDED_RTC)
+    runtime = controller(backend, executor, mode=mode)
     warm(runtime)
     observation_index = 3
     for action_index in range(6):
@@ -358,9 +365,10 @@ def test_guided_prefix_hash_mismatch_drops_entire_response():
     assert runtime.metrics.accepted_responses == 0
 
 
-def test_exact_native_change_signal_invalidates_even_when_canonical_bytes_match():
-    backend = FakeBackend(mode=ExecutionMode.GUIDED_RTC)
-    runtime = controller(backend, mode=ExecutionMode.GUIDED_RTC)
+@pytest.mark.parametrize("mode", [ExecutionMode.GUIDED_RTC, ExecutionMode.TRAINED_RTC])
+def test_exact_native_change_signal_invalidates_even_when_canonical_bytes_match(mode):
+    backend = FakeBackend(mode=mode)
+    runtime = controller(backend, mode=mode)
     warm(runtime)
     observation_index = 3
     for action_index in range(5):
@@ -377,9 +385,10 @@ def test_exact_native_change_signal_invalidates_even_when_canonical_bytes_match(
         runtime.close()
 
 
-def test_committed_guided_actuator_override_invalidates_result_and_resets_before_rearm():
-    backend = FakeBackend(mode=ExecutionMode.GUIDED_RTC)
-    runtime = controller(backend, mode=ExecutionMode.GUIDED_RTC)
+@pytest.mark.parametrize("mode", [ExecutionMode.GUIDED_RTC, ExecutionMode.TRAINED_RTC])
+def test_committed_guided_actuator_override_invalidates_result_and_resets_before_rearm(mode):
+    backend = FakeBackend(mode=mode)
+    runtime = controller(backend, mode=mode)
     warm(runtime)
     observation_index = 3
     for action_index in range(5):
@@ -436,8 +445,8 @@ def test_controller_rejects_backend_mode_or_dimension_mismatch():
         controller(backend, mode=ExecutionMode.GUIDED_RTC, committed_steps=2)
 
 
-def test_controller_rejects_trained_and_synchronous_modes():
-    for mode in (ExecutionMode.TRAINED_RTC, ExecutionMode.SYNCHRONOUS_CHUNKED):
+def test_controller_rejects_synchronous_mode():
+    for mode in (ExecutionMode.SYNCHRONOUS_CHUNKED,):
         with pytest.raises(ValueError, match="supports only"):
             controller(FakeBackend(), mode=mode)
 

@@ -27,11 +27,14 @@ from .models import (
     DownloadURL,
     Evaluation,
     EvaluationCreate,
+    ExecutionMode,
     FileCompleteRequest,
     JobEvent,
     Page,
     PricingCatalog,
+    Protocol,
     Quote,
+    RobotSchema,
     SessionBootstrap,
     TrainingJob,
     TrainingJobCreate,
@@ -279,6 +282,8 @@ class TenonClient:
         *,
         idempotency_key: str | None = None,
     ) -> Quote:
+        if spec.execution_mode == ExecutionMode.TRAINED_RTC:
+            self._require_trained_deployment(spec.deployment_id)
         return self._transport.request(
             "POST",
             "quotes",
@@ -422,6 +427,12 @@ class TenonClient:
         *,
         idempotency_key: str | None = None,
     ) -> Deployment:
+        if ExecutionMode.TRAINED_RTC in request.execution_modes:
+            if request.protocols != {Protocol.TENON_CONTROL} or request.execution_modes != {
+                ExecutionMode.TRAINED_RTC
+            }:
+                raise ValueError("WAN-trained deployment must use its native trained_rtc mode only")
+            self._require_trained_checkpoint(request.checkpoint_id, request.robot_schema)
         return self._transport.request(
             "POST",
             "deployments",
@@ -471,6 +482,33 @@ class TenonClient:
         )
 
     # Control sessions
+    def _require_trained_checkpoint(
+        self, checkpoint_id: str, schema: RobotSchema | None = None
+    ) -> Checkpoint:
+        checkpoint = self.get_checkpoint(checkpoint_id)
+        checkpoint.require_trained_rtc(schema)
+        capabilities = self.capabilities()
+        if (
+            ExecutionMode.TRAINED_RTC not in capabilities.execution_modes
+            or Protocol.TENON_CONTROL not in capabilities.protocols
+            or checkpoint.manifest.base_model not in capabilities.base_models
+        ):
+            raise ValueError("endpoint does not advertise compatible trained control capability")
+        return checkpoint
+
+    def _require_trained_deployment(self, deployment_id: str) -> Deployment:
+        deployment = self.get_deployment(deployment_id)
+        if (
+            deployment.state != "ready"
+            or ExecutionMode.TRAINED_RTC not in deployment.execution_modes
+            or Protocol.TENON_CONTROL not in deployment.protocols
+        ):
+            raise ValueError("deployment does not offer native trained_rtc")
+        checkpoint = self._require_trained_checkpoint(deployment.checkpoint_id)
+        if deployment.schema_hash != checkpoint.manifest.robot_schema_hash:
+            raise ValueError("trained deployment/checkpoint schema identity differs")
+        return deployment
+
     def create_control_session(
         self,
         spec: ControlSessionSpec,
@@ -479,8 +517,8 @@ class TenonClient:
         max_cost_microcredits: int,
         idempotency_key: str | None = None,
     ) -> ControlSession:
-        if spec.execution_mode == "trained_rtc":
-            raise ValueError("trained_rtc isn't admitted by ControlSessionCreate in OpenAPI v0.1")
+        if spec.execution_mode == ExecutionMode.TRAINED_RTC:
+            self._require_trained_deployment(spec.deployment_id)
         if quote.kind != "control_session":
             raise ValueError("control session requires a control_session quote")
         self.require_budget(quote, max_cost_microcredits)

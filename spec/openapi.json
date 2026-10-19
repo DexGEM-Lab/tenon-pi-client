@@ -6879,7 +6879,8 @@
             "enum": [
               "synchronous_chunked",
               "async_aligned",
-              "guided_rtc"
+              "guided_rtc",
+              "trained_rtc"
             ]
           },
           "fallback": {

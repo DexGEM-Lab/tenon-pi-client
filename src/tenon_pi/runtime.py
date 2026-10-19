@@ -1,8 +1,8 @@
 """Local index-aligned execution for native async and guided server modes.
 
 The client owns buffering, exact committed-prefix bytes, actuator truth, and
-reset/rearm. Guided sampling math remains private server functionality; trained
-RTC is not implemented here.
+reset/rearm. Guided and trained sampling remain server functionality; their
+negotiated conditioning evidence is checked distinctly here.
 """
 
 from __future__ import annotations
@@ -80,7 +80,8 @@ class Observation:
             raise RuntimeFault("at least one image is required")
 
 
-SUPPORTED_ALIGNED_MODES = frozenset({ExecutionMode.ASYNC_ALIGNED, ExecutionMode.GUIDED_RTC})
+PREFIX_CONDITIONED_MODES = frozenset({ExecutionMode.GUIDED_RTC, ExecutionMode.TRAINED_RTC})
+SUPPORTED_ALIGNED_MODES = frozenset({ExecutionMode.ASYNC_ALIGNED, *PREFIX_CONDITIONED_MODES})
 
 
 def require_aligned_mode(value: ExecutionMode | str) -> ExecutionMode:
@@ -90,7 +91,8 @@ def require_aligned_mode(value: ExecutionMode | str) -> ExecutionMode:
         raise ValueError(f"unsupported local control execution mode: {value!r}") from exc
     if mode not in SUPPORTED_ALIGNED_MODES:
         raise ValueError(
-            f"local aligned controller supports only async_aligned or guided_rtc; got {mode.value}"
+            "local aligned controller supports only async_aligned, guided_rtc or trained_rtc; "
+            f"got {mode.value}"
         )
     return mode
 
@@ -807,7 +809,7 @@ class AsyncAlignedController:
         buffer_end: int,
     ) -> InferenceRequest:
         prefix = None
-        if self.expected_mode == ExecutionMode.GUIDED_RTC:
+        if self.expected_mode in PREFIX_CONDITIONED_MODES:
             prefix = CommittedPrefix.from_array(
                 target_start,
                 self.buffer.snapshot(target_start, committed_end),
@@ -838,15 +840,21 @@ class AsyncAlignedController:
         if response.start_action_index != request.target_start_action_index:
             raise RuntimeFault("response start index mismatch")
         prefix = request.committed_prefix
-        if self.expected_mode == ExecutionMode.GUIDED_RTC:
+        if self.expected_mode in PREFIX_CONDITIONED_MODES:
             if prefix is None:
-                raise RuntimeFault("guided_rtc request omitted its committed prefix")
+                raise RuntimeFault("conditioned request omitted its committed prefix")
             if response.prefix_consumed_count != prefix.count:
-                raise RuntimeFault("guided_rtc response consumed a different prefix count")
+                raise RuntimeFault("conditioned response consumed a different prefix count")
             if response.committed_prefix_sha256 != prefix.sha256:
-                raise RuntimeFault("guided_rtc response echoed a different prefix hash")
-            if response.sampler_conditioning != "guided":
-                raise RuntimeFault("guided_rtc response lacks guided conditioning evidence")
+                raise RuntimeFault("conditioned response echoed a different prefix hash")
+            conditioning = (
+                "trained" if self.expected_mode == ExecutionMode.TRAINED_RTC else "guided"
+            )
+            if response.sampler_conditioning != conditioning:
+                raise RuntimeFault(
+                    f"{self.expected_mode.value} response lacks "
+                    f"{conditioning} conditioning evidence"
+                )
         elif any(
             value is not None
             for value in (
@@ -855,7 +863,7 @@ class AsyncAlignedController:
                 response.sampler_conditioning,
             )
         ):
-            raise RuntimeFault("async_aligned response carried guided conditioning evidence")
+            raise RuntimeFault("async_aligned response carried conditioning evidence")
         return actions
 
     def _return_requested(self, index: int, action: np.ndarray) -> np.ndarray:

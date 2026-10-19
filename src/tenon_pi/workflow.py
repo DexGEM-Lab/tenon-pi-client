@@ -207,10 +207,8 @@ def verify_checkpoint(
         and manifest.effective_batch_size != spec.effective_batch_size
     ):
         raise ValueError("checkpoint effective batch differs from the user-selected batch")
-    if expected_mode == TrainingMode.WAN_RTC and (
-        not isinstance(manifest.rtc_config, dict) or not manifest.rtc_config
-    ):
-        raise ValueError("WAN-trained checkpoint lacks versioned conditioning provenance")
+    if expected_mode == TrainingMode.WAN_RTC:
+        checkpoint.require_trained_rtc(schema)
 
 
 def _schema_json(schema: RobotSchema) -> dict[str, Any]:
@@ -386,8 +384,6 @@ def deploy_run(
     approve: Callable[[Quote], None],
 ) -> dict[str, Any]:
     journal.identity(client)
-    if execution_mode == ExecutionMode.TRAINED_RTC:
-        raise ValueError("trained_rtc is not admitted by the frozen session-create contract")
     if not journal.data.get("checkpoints"):
         raise ValueError("run context has no verified training checkpoint")
     schema = RobotSchema.model_validate(journal.data["input"]["schema"])
@@ -403,6 +399,21 @@ def deploy_run(
         schema=schema,
         schema_hash=journal.data["dataset_version"]["schema_hash"],
     )
+    trained = checkpoint.manifest.training_mode == TrainingMode.WAN_RTC
+    if trained != (execution_mode == ExecutionMode.TRAINED_RTC):
+        raise ValueError(
+            "checkpoint training objective and requested control mode differ; no fallback"
+        )
+    if trained:
+        checkpoint.require_trained_rtc(schema)
+        capabilities = client.capabilities()
+        if (
+            execution_mode not in capabilities.execution_modes
+            or spec.base_model not in capabilities.base_models
+        ):
+            raise ValueError(
+                "current endpoint does not offer trained control for the checkpoint model"
+            )
     if schema.action_semantics == "joint_position":
         fallback = FallbackPolicy(
             mode="drain_then_hold", hold_steps=5, hold_behavior=LastAppliedAbsoluteTarget()

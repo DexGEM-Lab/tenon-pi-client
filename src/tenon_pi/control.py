@@ -16,6 +16,7 @@ from websockets.sync.client import connect as websocket_connect
 from .errors import TenonProtocolError
 from .models import ControlConnection, ExecutionMode, Protocol
 from .runtime import (
+    PREFIX_CONDITIONED_MODES,
     ActionResponse,
     InferenceRequest,
     Observation,
@@ -192,8 +193,8 @@ class NativeWebSocketBackend:
 
     def infer(self, request: InferenceRequest) -> ActionResponse:
         prefix = request.committed_prefix
-        if self.expected_mode == ExecutionMode.GUIDED_RTC and prefix is None:
-            raise RuntimeFault("guided_rtc request requires a committed prefix")
+        if self.expected_mode in PREFIX_CONDITIONED_MODES and prefix is None:
+            raise RuntimeFault("conditioned request requires a committed prefix")
         if self.expected_mode == ExecutionMode.ASYNC_ALIGNED and prefix is not None:
             raise RuntimeFault("async_aligned request forbids committed_prefix")
         message: dict[str, Any] = {
@@ -231,7 +232,7 @@ class NativeWebSocketBackend:
                     "committed_prefix_sha256",
                     "sampler_conditioning",
                 }
-                if self.expected_mode == ExecutionMode.GUIDED_RTC
+                if self.expected_mode in PREFIX_CONDITIONED_MODES
                 else {"mode"}
             )
             if set(generation) != expected_generation_fields:
@@ -245,6 +246,12 @@ class NativeWebSocketBackend:
             conditioning = generation.get("sampler_conditioning")
             if conditioning is not None and not isinstance(conditioning, str):
                 raise TypeError("sampler_conditioning must be a string")
+            if self.expected_mode in PREFIX_CONDITIONED_MODES:
+                expected = (
+                    "trained" if self.expected_mode == ExecutionMode.TRAINED_RTC else "guided"
+                )
+                if conditioning != expected:
+                    raise TypeError("sampler conditioning does not match the negotiated mode")
             actions = tuple(tuple(float(value) for value in row) for row in message["actions"])
             return ActionResponse(
                 # The approved actions example omits epoch; the authenticated

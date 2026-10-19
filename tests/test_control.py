@@ -116,14 +116,14 @@ def test_guided_handshake_is_explicit_and_mode_mismatch_closes():
     assert mismatched.closed == (4409, "execution mode mismatch")
 
 
-def test_native_handshake_rejects_trained_rtc_before_consuming_hello():
+def test_native_handshake_rejects_synchronous_before_consuming_hello():
     fake = FakeSocket([])
     socket = ControlSocket(
         connection(Protocol.TENON_CONTROL), connector=lambda *_args, **_kwargs: fake
     )
     with pytest.raises(ValueError, match="supports only"):
         socket.native_handshake(
-            schema_hash="sha256:schema", expected_mode=ExecutionMode.TRAINED_RTC
+            schema_hash="sha256:schema", expected_mode=ExecutionMode.SYNCHRONOUS_CHUNKED
         )
 
 

@@ -2,9 +2,10 @@
 
 `AsyncAlignedController` 负责原生 `tenon-control-v1` 的 action chronology；调用方
 负责 control clock 和最终 simulator/actuator 调用。类名为兼容保留，但构造时必须
-显式选择 `async_aligned` 或 `guided_rtc`。客户端不包含 guided sampler、VJP、guidance
+显式选择 `async_aligned`、`guided_rtc` 或 `trained_rtc`。客户端不包含 guided sampler、VJP、guidance
 weight 或私有模型数学，只实现冻结 wire、index/buffer、actuator truth 与 reset/rearm。
-`trained_rtc` 和 mode 冒充都会拒绝。
+`trained_rtc` 需要真实 WAN 训练的 checkpoint、匹配的 RTC 元数据和服务能力；
+mode 冒充及静默退回其他 sampler 都会拒绝。参见[候选工作流](training-candidate.md)。
 
 ## Motion 前的 admission
 
@@ -16,8 +17,8 @@ required_steps = ceil(max_warm_turnaround × controller_hz) + safety_steps
 2 × required_steps + 1 <= action_horizon_steps
 ```
 
-warm admission 只是对已观测样本的本地检查，不是 WAN 时延保证。guided warm 请求的
-prefix 为空，测得的是普通 sampler turnaround，不能代表非空 guided conditioning 的
+warm admission 只是对已观测样本的本地检查，不是 WAN 时延保证。guided/trained warm 请求的
+prefix 为空，测得的是普通 sampler turnaround，不能代表非空 prefix conditioning 的
 额外开销。仿真控制频率是仿真时间轴配置，不等于墙钟实时运行能力。
 
 ## 显式 mode 与 committed prefix
@@ -27,14 +28,16 @@ action response 的 mode 不一致会失败。
 
 - `async_aligned` 禁止发送 `committed_prefix`；只保留本地 committed index，并 splice
   仍未执行的 future suffix。
-- `guided_rtc` 使用现有冻结字段，prefix 必须精确覆盖
+- `guided_rtc` 和 `trained_rtc` 使用现有冻结字段，prefix 必须精确覆盖
   `[target_start_action_index, committed_end_action_index_exclusive)`。
 - hash 是 row-major little-endian float32 action payload 的 SHA-256；warm 的零长度
   prefix 也显式发送。
 - guided response 的 mode、consumed count、prefix hash 与
   `sampler_conditioning="guided"` 必须和请求完全一致。
-- `trained_rtc`、`synchronous_chunked`、guided 缺 prefix、async 带 prefix，以及把
-  guided response 改叫 async 都会明确失败。
+- trained response 要求相同的精确 count/hash 和 `sampler_conditioning="trained"`。
+- `synchronous_chunked`、conditioned mode 缺 prefix、async 带 prefix，以及任何
+  mode/conditioning 冒充都会明确失败。服务必须核验具体 checkpoint 的真实训练来源、
+  元数据/模型及实际 worker 能力；全局 enum 不是资格证明。
 
 始终只有一个 inference request in flight。错误 epoch、request、observation、start、
 shape、dimension、mode/prefix evidence、非有限值或超出 deployment physical bounds 的
@@ -57,13 +60,13 @@ command token 及其 native encoding；`NativeCommandTrace` 独立快照 post-li
 - limiter 或 driver 真正改变 native payload 时，按该实际值转换，并单独保留精确
   `native_changed` signal；
 - bridge 使用 `record_applied(..., command_changed=True)` 传递该信号，因此即使不同
-  native float32 反量化成同一个 canonical float32，guided work 仍会失效；
+  native float32 反量化成同一个 canonical float32，conditioned work 仍会失效；
 - prefix hash/bounds 不使用 tolerance，也不会伪造 canonical vector 来强行触发失效。
 
 receipt 证明的是 command representation continuity，不是物理关节状态；后者仍需真实
 安装的 telemetry。
 
-如果 guided committed row 被本地 limiter/driver 改写，基于该 prefix 的 cloud suffix
+如果 guided/trained committed row 被本地 limiter/driver 改写，基于该 prefix 的 cloud suffix
 已经失效。客户端会立即清空它、丢弃相关 in-flight result、进入 `rearm_required`，并在
 唯一 in-flight 请求之后串行发送现有 reset。reset ACK 必须让 epoch 加一，之后才能用
 新的 observation 重新 warm。fallback truth 使用实际 applied command，绝不把 raw
@@ -71,7 +74,7 @@ prediction 伪装成 applied。async mode 没有 value prefix，但同样记录 
 
 ## 串行 reset ownership
 
-普通 reset 与 guided override reset 使用同一个 backend/socket lane。inference 尚未完成时，
+普通 reset 与 prefix override reset 使用同一个 backend/socket lane。inference 尚未完成时，
 客户端继续持有它的 `Future`，旧 response 只由原 backend call 消费。唯一 reset task 在其
 后等待，再发送一次现有 reset frame 并接收一次 ACK；绝不会并发调用 socket `recv`。
 
@@ -109,7 +112,8 @@ tenon-pi agent start-simulator --context .tenon/run.json \
   --task-suite libero_10 --task-id 0
 ```
 
-只有服务支持时才在 `agent deploy --execution-mode guided_rtc` 选择 guided；launcher
+WAN 工作流在真实 WAN-trained checkpoint 与服务能力核验后使用
+`agent deploy --execution-mode trained_rtc`；launcher
 读取 context 中实际 admitted mode，不会降级或冒充。显式 `--python` 也会先执行新的
 真实本地 preflight，不能绕过资格检查。结果是 episode evidence，不是质量 benchmark。
 检查范围见 [setup receipt 指南](simulator-setup.md)。

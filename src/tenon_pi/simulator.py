@@ -64,7 +64,11 @@ def main() -> None:
     parser.add_argument(
         "--execution-mode",
         required=True,
-        choices=(ExecutionMode.ASYNC_ALIGNED.value, ExecutionMode.GUIDED_RTC.value),
+        choices=(
+            ExecutionMode.ASYNC_ALIGNED.value,
+            ExecutionMode.GUIDED_RTC.value,
+            ExecutionMode.TRAINED_RTC.value,
+        ),
     )
     args = parser.parse_args()
 

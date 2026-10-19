@@ -237,7 +237,7 @@ def run_robot_loop(
             steps += 1
             deadline += round(1e9 / profile.controller_hz)
             if runtime.reset_pending:
-                stopped_reason = "guided_override_requires_reset_and_rearm"
+                stopped_reason = "conditioned_override_requires_reset_and_rearm"
                 break
     except RuntimeStopped as exc:
         stopped_reason = str(exc)

@@ -113,8 +113,7 @@ def test_control_connection_uses_response_url_unchanged(contract_fixtures):
     assert connection.protocol == Protocol.TENON_CONTROL
 
 
-def test_trained_rtc_quote_is_representable_but_create_is_not(contract_fixtures):
-    # ControlSessionSpec follows the quote schema. ControlSessionCreate in the
-    # approved OpenAPI intentionally omits trained_rtc.
+def test_trained_rtc_enum_does_not_relabel_ordinary_fixture(contract_fixtures):
+    # An enum value alone does not change a checkpoint or an admitted session.
     assert ExecutionMode.TRAINED_RTC.value == "trained_rtc"
     assert contract_fixtures["control_session"]["execution_mode"] == "async_aligned"

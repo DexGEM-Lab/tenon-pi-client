@@ -3,10 +3,11 @@
 `AsyncAlignedController` owns native `tenon-control-v1` action chronology while
 the caller owns the control clock and final actuator/environment call. The name
 is retained for API compatibility; construction now requires an explicit
-`async_aligned` or `guided_rtc` expected mode. Guided sampling remains private
-server functionality—the public client implements only the frozen prefix wire,
-index alignment, actuator-truth tracking, and reset/rearm. `trained_rtc` and
-mode relabeling are rejected. `openpi-ws-v1` remains a separate raw-upstream
+`async_aligned`, `guided_rtc` or `trained_rtc` expected mode. Sampling remains
+server functionality; the client implements the unchanged prefix wire, index
+alignment, actuator-truth tracking and reset/rearm. Trained mode requires a
+WAN-trained checkpoint and a qualified service/deployment. Mode relabeling and
+fallback to a different sampler are rejected. `openpi-ws-v1` remains a separate raw-upstream
 compatibility path.
 
 ## Admission before motion
@@ -23,8 +24,8 @@ required_steps = ceil(max_warm_turnaround × controller_hz) + safety_steps
 No `env.step` or hardware command occurs before this passes.
 
 This is a local admission check over observed warm samples, not a WAN latency
-SLA. In guided mode those probes have an empty committed prefix, so they measure
-ordinary sampler turnaround; they do not bound the extra cost of nonempty guided
+SLA. In either conditioned mode those probes have an empty committed prefix, so they measure
+ordinary sampler turnaround; they do not bound the extra cost of nonempty prefix
 conditioning. Simulator control frequency is its configured simulation timebase,
 not proof of wall-clock real-time execution. Measure the actual operating case.
 
@@ -35,14 +36,21 @@ client rejects a different hello or response generation mode.
 
 - `async_aligned` never sends `committed_prefix`; it preserves locally committed
   indices and splices only the still-future suffix.
-- `guided_rtc` sends the existing frozen `committed_prefix` exactly covering
+- `guided_rtc` and `trained_rtc` send the existing frozen `committed_prefix` exactly covering
   `[target_start_action_index, committed_end_action_index_exclusive)`. Its hash
   is SHA-256 over row-major little-endian float32 action bytes. Even the warm
   zero-prefix request carries an explicit empty segment.
 - A guided response is accepted only when mode, consumed count, exact prefix
   hash and `sampler_conditioning="guided"` match the request.
-- `trained_rtc`, `synchronous_chunked`, missing prefixes, prefixes in async mode,
-  and guided/async response relabeling fail explicitly.
+- A trained response requires the same exact count/hash evidence with
+  `sampler_conditioning="trained"`; guided evidence cannot satisfy it.
+- `synchronous_chunked`, missing prefixes, prefixes in async mode and mode or
+  conditioning relabeling fail explicitly.
+
+The REST client checks the specific ready checkpoint's `training_mode=wan_rtc`,
+versioned RTC metadata/shape, artifact lineage, endpoint capability and deployed
+mode. The service must verify the saved model and match an actual capable worker;
+a global enum does not qualify a checkpoint. See [candidate workflow](training-candidate.md).
 
 No private sampler, guidance weights, VJP, or fallback-to-baseline logic exists
 in this client.
@@ -66,7 +74,7 @@ max(local_next_to_execute,
 
 Elapsed entries are discarded, committed future actions are never overwritten,
 and the remaining uncommitted future is atomically replaced. Wrong epoch,
-request, observation, start, shape, dimension, generation mode or guided prefix
+request, observation, start, shape, dimension, generation mode or conditioned prefix
 evidence, non-finite values, and actions outside deployment physical bounds are
 dropped/faulted before execution. The client does not silently clip a native
 response.
@@ -91,7 +99,7 @@ payload submitted and the native payload returned by the driver:
   converted from that actual native value and sets an independent exact
   `native_changed` signal;
 - the bridge passes that signal as `record_applied(..., command_changed=True)`,
-  so guided work invalidates even when inverse quantization maps a distinct
+  so conditioned work invalidates even when inverse quantization maps a distinct
   native float32 payload to the same canonical float32 vector;
 - no numerical tolerance weakens prefix hashes or bounds, and no fake canonical
   vector is manufactured merely to force invalidation.
@@ -99,7 +107,7 @@ payload submitted and the native payload returned by the driver:
 This receipt proves command representation continuity, not physical joint state.
 Physical-state tracking still requires real telemetry owned by the installation.
 
-For guided mode, every future row sent as a committed prefix is retained until
+For guided and trained modes, every future row sent as a committed prefix is retained until
 its application is reported. If a local limiter or driver changes one of those
 rows, the conditioned cloud suffix is causally invalid: the client clears it,
 drops any affected in-flight result, enters `rearm_required`, and serializes an
@@ -110,7 +118,7 @@ Async mode sends no value prefix, but still records applied truth for fallback.
 
 ## Serialized reset ownership
 
-Ordinary reset and guided-override reset use the same one-backend/socket lane. If
+Ordinary reset and prefix-override reset use the same one-backend/socket lane. If
 inference is still running, its `Future` remains owned and its response is
 consumed by that original backend call. One reset task waits behind it, then
 sends exactly one existing reset frame and receives exactly one ACK. Reset never
@@ -170,7 +178,8 @@ tenon-pi agent start-simulator --context .tenon/run.json \
   --task-suite libero_10 --task-id 0
 ```
 
-Choose `agent deploy --execution-mode guided_rtc` only when supported; the launcher
+For the WAN workflow use `agent deploy --execution-mode trained_rtc` only with
+a verified WAN-trained checkpoint and qualified service; the launcher
 reads the admitted mode from that context and never relabels it. For an explicit
 custom interpreter, `--python` triggers fresh local qualification rather than
 bypassing the receipt. Output is measured rollout evidence, not a benchmark claim.

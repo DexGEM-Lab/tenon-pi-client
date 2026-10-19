@@ -84,13 +84,13 @@ def test_dataset_upload_format_has_only_approved_v2_v3_extension():
     assert "dataset_timing" not in schemas["DatasetVersionCreate"]["properties"]
 
 
-def test_connection_url_is_explicit_and_trained_rtc_create_boundary_is_preserved():
+def test_connection_url_and_approved_trained_create_enum():
     schemas = SPEC["components"]["schemas"]
     wss = schemas["ControlConnection"]["properties"]["wss_url"]
     assert "not derived from REST origin" in wss["description"]
     create_modes = schemas["ControlSessionCreate"]["properties"]["execution_mode"]["enum"]
     quote_modes = schemas["ControlSessionSpec"]["properties"]["execution_mode"]["enum"]
-    assert "trained_rtc" not in create_modes
+    assert "trained_rtc" in create_modes
     assert "trained_rtc" in quote_modes
 
 

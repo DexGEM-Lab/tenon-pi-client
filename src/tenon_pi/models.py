@@ -492,11 +492,12 @@ class ControlSessionSpec(RequestModel):
 
 
 class ControlSessionCreate(ControlSessionSpec):
-    # The approved OpenAPI deliberately doesn't admit trained_rtc on create yet.
+    # Candidate amendment: service/checkpoint capability still gates trained use.
     execution_mode: Literal[
         ExecutionMode.SYNCHRONOUS_CHUNKED,
         ExecutionMode.ASYNC_ALIGNED,
         ExecutionMode.GUIDED_RTC,
+        ExecutionMode.TRAINED_RTC,
     ]
     quote_id: str
 
@@ -577,6 +578,45 @@ class Checkpoint(ResponseModel):
     created_at: datetime
     updated_at: datetime
     resource_version: Annotated[int, Field(ge=1)]
+
+    def require_trained_rtc(self, schema: RobotSchema | None = None) -> None:
+        """Check public provenance/shape; the service verifies saved model/worker identity."""
+        config = self.manifest.rtc_config
+        if (
+            self.state != "ready"
+            or self.manifest.training_mode != TrainingMode.WAN_RTC
+            or not self.training_job_id
+            or not self.manifest.runtime_revision
+            or not self.manifest.artifacts
+            or any(item.size_bytes <= 0 for item in self.manifest.artifacts)
+        ):
+            raise ValueError(
+                "trained_rtc requires a ready WAN-trained checkpoint with artifact lineage"
+            )
+        if not isinstance(config, dict) or config.get("training_mode") != "wan_rtc":
+            raise ValueError("trained checkpoint lacks matching conditioning metadata")
+        for field in ("adapter_version", "conditioning", "sampler", "loss"):
+            if not isinstance(config.get(field), str) or not config[field]:
+                raise ValueError("trained checkpoint lacks versioned conditioning metadata")
+        horizon, capacity = config.get("action_horizon"), config.get("max_prefix")
+        mask = config.get("action_mask")
+        if (
+            type(horizon) is not int
+            or not 1 < horizon <= 512
+            or type(capacity) is not int
+            or not 0 < capacity < horizon
+            or not isinstance(mask, list)
+            or not mask
+            or not any(mask)
+            or any(type(value) is not bool for value in mask)
+        ):
+            raise ValueError("trained checkpoint conditioning shape/capacity is invalid")
+        if schema is not None and (
+            horizon != schema.action_horizon_steps
+            or capacity < schema.max_committed_prefix_steps
+            or len(mask) < len(schema.action_channels)
+        ):
+            raise ValueError("trained checkpoint conditioning is incompatible with the schema")
 
 
 class DownloadURL(ResponseModel):
