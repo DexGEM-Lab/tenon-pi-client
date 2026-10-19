@@ -18,3 +18,10 @@ The snapshot retains the approved `max_cost_microcredits`, `TrainingSpec`,
 `CreditBalance`, `Capabilities`, and dataset-version shapes. It is the public
 client projection, so non-client topology and worker-transport vendor extensions
 are omitted. Further wire changes require separate approval.
+
+The unpublished training candidate adds optional positive `effective_batch_size`
+and `training_mode=standard|wan_rtc` to training specs and job creation. Existing
+required fields and omission behavior remain unchanged. Explicit values bind the
+quote, logical job and checkpoint provenance. These additions require an amended
+service endpoint; they are not a claim that the current stable service supports
+them. See `docs/training-candidate.md` from the repository root.

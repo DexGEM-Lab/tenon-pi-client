@@ -30,6 +30,7 @@ from .models import (
     Quote,
     RobotSchema,
     TrainingMethod,
+    TrainingMode,
     TrainingSpec,
 )
 from .preparation import (
@@ -256,6 +257,8 @@ def _training_spec(
     checkpoint_interval_steps: int,
     base_model: str,
     preset: str,
+    effective_batch_size: int | None = None,
+    training_mode: TrainingMode | None = None,
 ) -> TrainingSpec:
     values: dict[str, object] = {
         "dataset_version_id": dataset_version_id,
@@ -267,6 +270,10 @@ def _training_spec(
         "seed": seed,
         "checkpoint_interval_steps": checkpoint_interval_steps,
     }
+    if effective_batch_size is not None:
+        values["effective_batch_size"] = effective_batch_size
+    if training_mode is not None:
+        values["training_mode"] = training_mode
     if method == TrainingMethod.LORA:
         values["lora_profile"] = "openpi-pi05-action-lora-v1"
     return TrainingSpec.model_validate(values)
@@ -404,6 +411,21 @@ def agent_train(
     preset: Annotated[str | None, typer.Option("--preset")] = None,
     yes: Annotated[bool, typer.Option("--yes")] = False,
     context_file: Annotated[Path, typer.Option("--context")] = Path(".tenon/run.json"),
+    effective_batch_size: Annotated[
+        int | None,
+        typer.Option(
+            "--effective-batch-size",
+            min=1,
+            help="User-selected samples per optimizer update; omitted keeps legacy request shape.",
+        ),
+    ] = None,
+    training_mode: Annotated[
+        TrainingMode | None,
+        typer.Option(
+            "--training-mode",
+            help="Requested training objective; requires matching server capability.",
+        ),
+    ] = None,
 ) -> None:
     """Resume upload, validation, quote and training from a durable local context."""
     from .workflow import RunContext, run_training
@@ -432,6 +454,8 @@ def agent_train(
                 client, quote, max_cost_microcredits=max_cost_microcredits, yes=yes
             ),
             uploader_factory=DatasetUploader,
+            effective_batch_size=effective_batch_size,
+            training_mode=training_mode,
         )
         _echo(result)
 
@@ -682,6 +706,21 @@ def training_spec(
     seed: Annotated[int, typer.Option("--seed", min=0)] = 42,
     base_model: Annotated[str, typer.Option("--base-model")] = "openpi/pi05-base",
     preset: Annotated[str, typer.Option("--preset")] = "balanced-v1",
+    effective_batch_size: Annotated[
+        int | None,
+        typer.Option(
+            "--effective-batch-size",
+            min=1,
+            help="User-selected samples per optimizer update; omitted keeps legacy request shape.",
+        ),
+    ] = None,
+    training_mode: Annotated[
+        TrainingMode | None,
+        typer.Option(
+            "--training-mode",
+            help="Requested training objective; requires matching server capability.",
+        ),
+    ] = None,
 ) -> None:
     """Construct the exact TrainingSpec used inside a quote request, without network I/O."""
     spec = _training_spec(
@@ -693,6 +732,8 @@ def training_spec(
         checkpoint_interval_steps,
         base_model,
         preset,
+        effective_batch_size,
+        training_mode,
     )
     if output is not None:
         output.parent.mkdir(parents=True, exist_ok=True)
@@ -711,6 +752,21 @@ def training_quote(
     seed: Annotated[int, typer.Option("--seed", min=0)] = 42,
     base_model: Annotated[str, typer.Option("--base-model")] = "openpi/pi05-base",
     preset: Annotated[str, typer.Option("--preset")] = "balanced-v1",
+    effective_batch_size: Annotated[
+        int | None,
+        typer.Option(
+            "--effective-batch-size",
+            min=1,
+            help="User-selected samples per optimizer update; omitted keeps legacy request shape.",
+        ),
+    ] = None,
+    training_mode: Annotated[
+        TrainingMode | None,
+        typer.Option(
+            "--training-mode",
+            help="Requested training objective; requires matching server capability.",
+        ),
+    ] = None,
 ) -> None:
     spec = _training_spec(
         dataset_version_id,
@@ -721,6 +777,8 @@ def training_quote(
         checkpoint_interval_steps,
         base_model,
         preset,
+        effective_batch_size,
+        training_mode,
     )
     with _client(ctx) as client:
         _echo(client.quote_training(spec))
@@ -743,6 +801,21 @@ def training_run(
         typer.Option("--yes", help="Confirm the displayed quote non-interactively."),
     ] = False,
     wait: Annotated[bool, typer.Option("--wait/--no-wait")] = True,
+    effective_batch_size: Annotated[
+        int | None,
+        typer.Option(
+            "--effective-batch-size",
+            min=1,
+            help="User-selected samples per optimizer update; omitted keeps legacy request shape.",
+        ),
+    ] = None,
+    training_mode: Annotated[
+        TrainingMode | None,
+        typer.Option(
+            "--training-mode",
+            help="Requested training objective; requires matching server capability.",
+        ),
+    ] = None,
 ) -> None:
     spec = _training_spec(
         dataset_version_id,
@@ -753,6 +826,8 @@ def training_run(
         checkpoint_interval_steps,
         base_model,
         preset,
+        effective_batch_size,
+        training_mode,
     )
     with _client(ctx) as client:
         quote = client.quote_training(spec)

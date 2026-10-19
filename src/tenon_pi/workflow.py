@@ -32,6 +32,7 @@ from .models import (
     Quote,
     RobotSchema,
     TrainingMethod,
+    TrainingMode,
     TrainingSpec,
     ZeroDeltaPreserve,
 )
@@ -198,6 +199,19 @@ def verify_checkpoint(
     ):
         raise ValueError("LoRA checkpoint lacks named-profile/trainable-manifest evidence")
 
+    expected_mode = spec.training_mode or TrainingMode.STANDARD
+    if (manifest.training_mode or TrainingMode.STANDARD) != expected_mode:
+        raise ValueError("checkpoint training mode differs from the requested objective")
+    if (
+        spec.effective_batch_size is not None
+        and manifest.effective_batch_size != spec.effective_batch_size
+    ):
+        raise ValueError("checkpoint effective batch differs from the user-selected batch")
+    if expected_mode == TrainingMode.WAN_RTC and (
+        not isinstance(manifest.rtc_config, dict) or not manifest.rtc_config
+    ):
+        raise ValueError("WAN-trained checkpoint lacks versioned conditioning provenance")
+
 
 def _schema_json(schema: RobotSchema) -> dict[str, Any]:
     value = schema.model_dump(mode="json")
@@ -224,7 +238,18 @@ def run_training(
     max_cost_microcredits: int,
     approve: Callable[[Quote], None],
     uploader_factory: Callable[..., DatasetUploader] = DatasetUploader,
+    effective_batch_size: int | None = None,
+    training_mode: TrainingMode | None = None,
 ) -> dict[str, Any]:
+    additions = {}
+    if effective_batch_size is not None:
+        if type(effective_batch_size) is not int or effective_batch_size < 1:
+            raise ValueError("effective batch size must be a positive user-selected integer")
+        additions["effective_batch_size"] = effective_batch_size
+    if training_mode is not None:
+        additions["training_mode"] = TrainingMode(training_mode).value
+    if training_mode == TrainingMode.WAN_RTC and effective_batch_size is None:
+        raise ValueError("the WAN workflow requires an explicit user-selected effective batch")
     journal.identity(client)
     journal.bind(
         "input",
@@ -241,6 +266,7 @@ def run_training(
             base_model=base_model,
             preset=preset,
             budget=max_cost_microcredits,
+            **additions,
         ),
     )
     if "recipe" not in journal.data:
@@ -294,8 +320,15 @@ def run_training(
         seed=seed,
         **({"lora_profile": "openpi-pi05-action-lora-v1"} if method == TrainingMethod.LORA else {}),
         **journal.data["recipe"],
+        **additions,
     )
-    journal.bind("training_spec", spec.model_dump(mode="json"))
+    record = spec.model_dump(mode="json")
+    # Old records included the original defaults, but not these new optional
+    # fields. Preserve that shape and the original pending quote/create bodies.
+    for field in ("effective_batch_size", "training_mode"):
+        if field not in spec.model_fields_set:
+            record.pop(field)
+    journal.bind("training_spec", record)
     if "training_job_id" not in journal.data:
         if "training_quote" not in journal.data:
             quote = client.quote_training(spec, idempotency_key=journal.key("training-quote"))

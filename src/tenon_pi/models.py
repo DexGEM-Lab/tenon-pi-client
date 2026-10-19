@@ -37,6 +37,11 @@ class TrainingMethod(StrEnum):
     LORA = "lora"
 
 
+class TrainingMode(StrEnum):
+    STANDARD = "standard"
+    WAN_RTC = "wan_rtc"
+
+
 class Protocol(StrEnum):
     TENON_CONTROL = "tenon-control-v1"
     OPENPI_WS = "openpi-ws-v1"
@@ -408,6 +413,8 @@ class TrainingSpec(RequestModel):
     seed: Annotated[int, Field(ge=0)]
     checkpoint_interval_steps: Annotated[int, Field(ge=1)]
     lora_profile: Literal["openpi-pi05-action-lora-v1"] | None = None
+    effective_batch_size: Annotated[int, Field(ge=1, strict=True)] | None = None
+    training_mode: TrainingMode | None = None
 
     @model_validator(mode="after")
     def method_matches_lora_profile(self) -> Self:
@@ -554,6 +561,9 @@ class CheckpointManifest(ResponseModel):
     trainable_manifest_digest: str | None = None
     trainable_parameter_count: int | None = None
     adapter_ranks: dict[str, int] | None = None
+    effective_batch_size: Annotated[int, Field(ge=1, strict=True)] | None = None
+    training_mode: TrainingMode | None = None
+    rtc_config: dict[str, Any] | None = None
 
 
 class Checkpoint(ResponseModel):

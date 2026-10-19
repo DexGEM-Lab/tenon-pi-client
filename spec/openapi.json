@@ -5361,6 +5361,26 @@
               null
             ],
             "description": "Required for method=lora and forbidden for full_ft. Profile pins PaliGemma r16, action expert r32, and declared trainable heads."
+          },
+          "effective_batch_size": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "description": "User-selected samples per optimizer update. Omitted/null preserves legacy defaults. Explicit values are bound to quote/job/checkpoint and never silently changed."
+          },
+          "training_mode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "standard",
+              "wan_rtc",
+              null
+            ],
+            "description": "Omitted/null means standard. wan_rtc requires a matching qualified training adapter and binds the objective to checkpoint provenance; ordinary checkpoints are not relabeled."
           }
         }
       },
@@ -6306,6 +6326,26 @@
               null
             ],
             "description": "Required for method=lora and forbidden for full_ft. Profile pins PaliGemma r16, action expert r32, and declared trainable heads."
+          },
+          "effective_batch_size": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "description": "User-selected samples per optimizer update. Omitted/null preserves legacy defaults. Explicit values are bound to quote/job/checkpoint and never silently changed."
+          },
+          "training_mode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "standard",
+              "wan_rtc",
+              null
+            ],
+            "description": "Omitted/null means standard. wan_rtc requires a matching qualified training adapter and binds the objective to checkpoint provenance; ordinary checkpoints are not relabeled."
           }
         }
       },
