@@ -16,6 +16,7 @@ def test_agent_discovery_skill_and_portable_profiles():
     assert text.startswith("---\nname: tenon-pi-agent\n")
     assert "user gives an API key and robot/simulator data" in text.split("---", 2)[1]
     for path in (
+        "../../docs/training-candidate.md",
         "../../docs/quickstart.md",
         "../../docs/quickstart.zh-CN.md",
         "../../docs/robot-preparation.md",
@@ -49,6 +50,7 @@ def test_documented_agent_and_data_commands_exist():
         ("agent", "train"),
         ("agent", "deploy"),
         ("agent", "start-simulator"),
+        ("agent", "preflight-robot"),
     ):
         result = runner.invoke(app, [group, command, "--help"])
         assert result.exit_code == 0, result.output

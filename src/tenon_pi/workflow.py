@@ -320,13 +320,7 @@ def run_training(
         **journal.data["recipe"],
         **additions,
     )
-    record = spec.model_dump(mode="json")
-    # Old records included the original defaults, but not these new optional
-    # fields. Preserve that shape and the original pending quote/create bodies.
-    for field in ("effective_batch_size", "training_mode"):
-        if field not in spec.model_fields_set:
-            record.pop(field)
-    journal.bind("training_spec", record)
+    journal.bind("training_spec", spec.intent_record())
     if "training_job_id" not in journal.data:
         if "training_quote" not in journal.data:
             quote = client.quote_training(spec, idempotency_key=journal.key("training-quote"))

@@ -416,6 +416,14 @@ class TrainingSpec(RequestModel):
     effective_batch_size: Annotated[int, Field(ge=1, strict=True)] | None = None
     training_mode: TrainingMode | None = None
 
+    def intent_record(self) -> dict[str, Any]:
+        """Retain original defaults without injecting pilot fields into saved specs."""
+        record = self.model_dump(mode="json")
+        for field in ("effective_batch_size", "training_mode"):
+            if field not in self.model_fields_set:
+                record.pop(field)
+        return record
+
     @model_validator(mode="after")
     def method_matches_lora_profile(self) -> Self:
         if self.method == TrainingMethod.LORA and self.lora_profile is None:

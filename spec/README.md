@@ -25,3 +25,10 @@ required fields and omission behavior remain unchanged. Explicit values bind the
 quote, logical job and checkpoint provenance. These additions require an amended
 service endpoint; they are not a claim that the current stable service supports
 them. See `docs/training-candidate.md` from the repository root.
+
+The candidate also admits `trained_rtc` in `ControlSessionCreate`, matching its
+quote/spec enum. The 41 REST paths and 63 structural schemas match the approved
+amended contract; only public-facing documentation text is projected. Admission
+still requires a WAN-trained checkpoint, consistent saved-model metadata and an
+actual capable worker. Generation receipts are native protocol frames, not an
+OpenAPI schema: mode `trained_rtc` requires sampler conditioning `trained`.

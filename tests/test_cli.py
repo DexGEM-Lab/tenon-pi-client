@@ -116,7 +116,7 @@ def test_transport_error_payload_keeps_file_completion_context():
 def test_version_without_subcommand():
     result = runner.invoke(app=cli.app, args=["--version"])
     assert result.exit_code == 0
-    assert result.output.strip() == "0.2.0a1"
+    assert result.output.strip() == "0.3.0a1"
 
 
 def test_local_v3_manifest_command(tmp_path: Path):

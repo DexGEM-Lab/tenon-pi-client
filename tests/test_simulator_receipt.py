@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import pytest
 from typer.testing import CliRunner
 
-from tenon_pi import cli
+from tenon_pi import __version__, cli
 from tenon_pi import simulator_receipt as receipts
 from tenon_pi import simulator_setup as setup
 
@@ -21,7 +21,7 @@ def fake_installation(tmp_path, monkeypatch):
     source.mkdir()
     (source / "capture.py").write_text("capture = 1\n")
     versions = {
-        "tenon-pi-client": "0.2.0a1",
+        "tenon-pi-client": __version__,
         "torch": "2.2.2+cpu",
         "libero": "0.1.0",
         "glfw": "1.0",

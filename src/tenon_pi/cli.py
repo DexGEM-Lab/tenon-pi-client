@@ -610,6 +610,26 @@ def agent_start_simulator(
             raise typer.Exit(code=result.returncode)
 
 
+@agent_app.command("preflight-robot")
+def agent_preflight_robot(
+    profile_file: Annotated[Path, typer.Option("--profile", exists=True, dir_okay=False)],
+    settings_file: Annotated[Path, typer.Option("--settings", exists=True, dir_okay=False)],
+    adapter_factory: Annotated[
+        str, typer.Option("--adapter", help="Explicit trusted module:factory; executes local code.")
+    ],
+    adapter_config: Annotated[Path, typer.Option("--adapter-config", exists=True, dir_okay=False)],
+    prompt: Annotated[str, typer.Option("--prompt")],
+):
+    """Validate a supplied local adapter before spending; no API or motion commands."""
+    from .robot_runtime import RobotRunSettings, load_robot_adapter, preflight_robot_adapter
+
+    profile = RobotProfile.load(profile_file)
+    settings = RobotRunSettings.model_validate_json(settings_file.read_text())
+    config = _load_json_object(adapter_config, "trusted adapter configuration")
+    adapter = load_robot_adapter(adapter_factory, profile=profile, config=config)
+    _echo(preflight_robot_adapter(adapter, profile, settings, prompt=prompt))
+
+
 @agent_app.command("start-robot")
 def agent_start_robot(
     ctx: typer.Context,
@@ -735,10 +755,11 @@ def training_spec(
         effective_batch_size,
         training_mode,
     )
+    record = spec.intent_record()
     if output is not None:
         output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(spec.model_dump_json(indent=2) + "\n", encoding="utf-8")
-    _echo(spec)
+        output.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+    _echo(record)
 
 
 @training_app.command("quote")

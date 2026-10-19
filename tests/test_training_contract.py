@@ -277,3 +277,29 @@ def test_checkpoint_provenance_must_match_explicit_request(contract_fixtures, ba
             schema=schema,
             schema_hash=contract_fixtures["dataset_version"]["schema_hash"],
         )
+
+
+def test_cli_omitted_pilot_fields_preserve_legacy_spec_file(tmp_path, contract_fixtures):
+    output = tmp_path / "spec.json"
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "training",
+            "spec",
+            "--dataset-version-id",
+            "dsv_fixture",
+            "--method",
+            "full_ft",
+            "--max-steps",
+            "100",
+            "--max-runtime-seconds",
+            "7200",
+            "--checkpoint-interval-steps",
+            "100",
+            "--output",
+            str(output),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.output) == contract_fixtures["training_job"]["spec"]
+    assert json.loads(output.read_text()) == contract_fixtures["training_job"]["spec"]

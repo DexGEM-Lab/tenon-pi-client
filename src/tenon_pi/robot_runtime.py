@@ -174,6 +174,52 @@ def load_robot_adapter(
     return constructor(profile=profile, config=config)
 
 
+def _robot_controller(
+    adapter: RobotAdapter, profile: RobotProfile, settings: RobotRunSettings
+) -> RobotController:
+    initial = adapter.last_applied_action()
+    names = tuple(c.name for c in profile.action.native)
+    if set(initial) != set(names):
+        raise ValueError("adapter must report every last applied native action channel")
+    return RobotController(
+        adapter,
+        profile.action,
+        CommandLimiter(settings.lower, settings.upper, settings.max_delta),
+        [initial[n] for n in names],
+    )
+
+
+def preflight_robot_adapter(
+    adapter: RobotAdapter, profile: RobotProfile, settings: RobotRunSettings, *, prompt: str
+) -> dict[str, Any]:
+    """Validate local command/capture contracts without inference or send_action calls.
+
+    Requires the operator's explicit connected/armed state; always stops owned
+    actuators afterward. This is not commissioning or a reusable arming receipt.
+    """
+    try:
+        _robot_controller(adapter, profile, settings)
+        validator = CaptureValidator(profile, settings)
+        for index in range(3):
+            if not adapter.connected or not adapter.armed or adapter.stop_requested:
+                raise RuntimeStopped("adapter disconnected, disarmed or stop requested")
+            validator.observation(
+                adapter.capture(after_action_index=-1),
+                index=index,
+                after=-1,
+                applied_at_ns=None,
+                prompt=prompt,
+            )
+        return {
+            "profile_digest": profile.digest(),
+            "captures": 3,
+            "commands_sent": 0,
+            "physical_tracking_verified": False,
+        }
+    finally:
+        adapter.stop()
+
+
 def run_robot_loop(
     adapter: RobotAdapter,
     profile: RobotProfile,
@@ -186,23 +232,14 @@ def run_robot_loop(
 ) -> dict[str, Any]:
     """Run finite real capture/apply ticks; every exit requests stop-all before cleanup.
 
-    Guided command overrides retain the runtime's serialized reset ownership.
+    Conditioned command overrides retain the runtime's serialized reset ownership.
     This runner stops for explicit operator rearm instead of inventing a new epoch.
     """
     steps, observation_index, stopped_reason = 0, 0, "max_steps"
     applied_at = None
     validator = CaptureValidator(profile, settings, clock_ns)
     try:
-        initial = adapter.last_applied_action()
-        names = tuple(c.name for c in profile.action.native)
-        if set(initial) != set(names):
-            raise ValueError("adapter must report every last applied native action channel")
-        hardware = RobotController(
-            adapter,
-            profile.action,
-            CommandLimiter(settings.lower, settings.upper, settings.max_delta),
-            [initial[n] for n in names],
-        )
+        hardware = _robot_controller(adapter, profile, settings)
 
         def capture() -> Observation:
             nonlocal observation_index

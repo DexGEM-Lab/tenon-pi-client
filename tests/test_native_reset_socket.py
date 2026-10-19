@@ -41,6 +41,7 @@ def _observation(index: int, after: int) -> Observation:
     )
 
 
+@pytest.mark.parametrize("mode", [ExecutionMode.ASYNC_ALIGNED, ExecutionMode.TRAINED_RTC])
 @pytest.mark.parametrize(
     ("executor_workers", "disconnect_first"),
     [(None, False), (2, True)],
@@ -48,6 +49,7 @@ def _observation(index: int, after: int) -> Observation:
 def test_native_socket_reset_waits_for_held_response_then_acks_once(
     executor_workers: int | None,
     disconnect_first: bool,
+    mode: ExecutionMode,
 ):
     inference_started = threading.Event()
     release_inference = threading.Event()
@@ -64,7 +66,7 @@ def test_native_socket_reset_waits_for_held_response_then_acks_once(
                     "session_id": "ctl_fixture",
                     "epoch": 0,
                     "schema_hash": schema_hash,
-                    "execution_mode": "async_aligned",
+                    "execution_mode": mode.value,
                     "rearm_required": False,
                     "limits": {
                         "max_in_flight": 1,
@@ -96,7 +98,22 @@ def test_native_socket_reset_waits_for_held_response_then_acks_once(
                                     message["target_start_action_index"] + 10
                                 ),
                                 "actions": [[0.0]] * 10,
-                                "generation": {"mode": "async_aligned"},
+                                "generation": {
+                                    "mode": mode.value,
+                                    **(
+                                        {
+                                            "prefix_consumed_count": message["committed_prefix"][
+                                                "count"
+                                            ],
+                                            "committed_prefix_sha256": message["committed_prefix"][
+                                                "sha256"
+                                            ],
+                                            "sampler_conditioning": "trained",
+                                        }
+                                        if mode == ExecutionMode.TRAINED_RTC
+                                        else {}
+                                    ),
+                                },
                             }
                         )
                     )
@@ -136,11 +153,11 @@ def test_native_socket_reset_waits_for_held_response_then_acks_once(
         ) as socket:
             hello = socket.native_handshake(
                 schema_hash=schema_hash,
-                expected_mode=ExecutionMode.ASYNC_ALIGNED,
+                expected_mode=mode,
             )
             backend = NativeWebSocketBackend(
                 socket,
-                expected_mode=ExecutionMode.ASYNC_ALIGNED,
+                expected_mode=mode,
                 action_dim=1,
                 max_committed_prefix_steps=9,
                 authoritative_epoch=hello["epoch"],
@@ -154,7 +171,7 @@ def test_native_socket_reset_waits_for_held_response_then_acks_once(
             runtime = AsyncAlignedController(
                 backend,
                 executor=executor,
-                expected_mode=ExecutionMode.ASYNC_ALIGNED,
+                expected_mode=mode,
                 controller_hz=20,
                 state_dim=1,
                 action_dim=1,

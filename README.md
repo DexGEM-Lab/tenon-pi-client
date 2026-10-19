@@ -1,5 +1,11 @@
 # Tenon Pi Client
 
+**Unpublished 0.3.0a1 contract-pairing candidate.** New training and trained-RTC
+features require a qualified amended endpoint; installing this candidate does
+not enable them. Published 0.2 remains usable for ordinary runs. Install candidate
+bytes from the reviewed checkout/wheel, not an unpublished tag. See the
+[recommended WAN workflow](docs/training-candidate.md).
+
 A Python SDK, CLI and coding-agent workflow for hosted VLA training and inference:
 **local demonstrations → validated dataset → full fine-tuning or LoRA → checkpoint
 → deployment → simulator or your configured robot controller**.
@@ -22,14 +28,16 @@ Set `TENON_API_KEY` through your terminal's secret-input mechanism. Set
 `TENON_BASE_URL` to your invited service endpoint if different from the configured
 default, `https://tenon.dex-gem.ai/v1`. This repository does **not** establish that
 the default endpoint is currently available to your account. No service is needed
-for offline inspection/preparation. This source candidate is `0.2.0a1`; availability
+for offline inspection/preparation. This source candidate is `0.3.0a1`; availability
 on a package index or release page is not implied.
 
 Open your coding agent in the repository. `AGENTS.md` discovers the workflow;
-Claude Code uses `CLAUDE.md`. Paste this, replacing the data path and budget:
+Claude Code uses `CLAUDE.md`. For a qualified candidate endpoint, paste this,
+replacing the local data path, user effective batch and budget:
 
 > Read AGENTS.md and use Tenon Pi. My data are in `./my-data`; the API key is in the environment.
-> Set up the isolated SDK/simulator and pass CPU renderer/window preflight before spending.
+> Use my supplied calibrated adapter or requested simulator; pass its local preflight before spending.
+> My effective batch is **[BATCH]**. Use the WAN-trained workflow only with a qualified endpoint and checkpoint.
 > I authorize at most **[TOTAL] microcredits in total**: show quotes, stay within it and reuse `.tenon/run.json`.
 > Prepare, train, verify and deploy; open the live simulator or run my supplied calibrated adapter. Ask only for irreducible missing information and report real outcomes.
 

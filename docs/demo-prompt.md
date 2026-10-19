@@ -1,6 +1,8 @@
 # One-prompt simulator demo
 
-Replace only the total approved budget. The agent owns environment setup; the
+For the unpublished candidate, use the [recommended WAN prompt](training-candidate.md#one-prompt)
+with the user-selected effective batch and a qualified endpoint. The ordinary
+stable 0.2 simulator prompt below remains available. Replace the total approved budget. The agent owns environment setup; the
 user does not need an existing simulator Python. Technical defaults and exact
 commands are in [simulator setup](simulator-setup.md) and [quickstart](quickstart.md).
 

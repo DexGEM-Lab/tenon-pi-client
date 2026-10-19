@@ -237,3 +237,56 @@ def test_native_change_signal_survives_canonical_quantization_alias():
             np.testing.assert_array_equal(result.canonical_array(), mapping.to_canonical(applied))
             return
     pytest.fail("fixture did not produce the expected float32 native/canonical alias")
+
+
+@pytest.mark.parametrize("failure", [None, "stale", "capture", "skew"])
+def test_local_preflight_has_no_policy_commands_and_always_stops(failure):
+    from tenon_pi.robot_runtime import preflight_robot_adapter
+
+    profile = runner_profile("planar")
+    adapter = PlanarAdapter(profile)
+    adapter.failure = failure
+    if failure:
+        with pytest.raises((ValueError, OSError)):
+            preflight_robot_adapter(adapter, profile, settings(profile), prompt="task")
+    else:
+        result = preflight_robot_adapter(adapter, profile, settings(profile), prompt="task")
+        assert result["captures"] == 3 and result["commands_sent"] == 0
+        assert result["physical_tracking_verified"] is False
+    assert adapter.commands == [] and adapter.stops == 1 and not adapter.armed
+
+
+def test_preflight_cli_never_constructs_api_client(tmp_path, monkeypatch):
+    from typer.testing import CliRunner
+
+    from tenon_pi import cli, robot_runtime
+
+    profile = runner_profile("planar")
+    adapter = PlanarAdapter(profile)
+    profile_file = tmp_path / "profile.json"
+    profile_file.write_text(profile.model_dump_json())
+    settings_file = tmp_path / "settings.json"
+    settings_file.write_text(settings(profile).model_dump_json())
+    config = tmp_path / "config.json"
+    config.write_text("{}")
+    monkeypatch.setattr(cli, "_client", lambda *a: pytest.fail("preflight must not access API"))
+    monkeypatch.setattr(robot_runtime, "load_robot_adapter", lambda *a, **kw: adapter)
+    result = CliRunner().invoke(
+        cli.app,
+        [
+            "agent",
+            "preflight-robot",
+            "--profile",
+            str(profile_file),
+            "--settings",
+            str(settings_file),
+            "--adapter",
+            "fixture:factory",
+            "--adapter-config",
+            str(config),
+            "--prompt",
+            "task",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert '"commands_sent": 0' in result.output and adapter.commands == []

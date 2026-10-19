@@ -18,6 +18,26 @@ keyword arguments, and returns an adapter implementing `RobotAdapter` from
 code to execute. Keep configuration/credentials local; no key is passed through
 subprocess arguments or written to the journal.
 
+## Local preflight before spending
+
+Use the same trusted adapter, profile and explicit limits before training or
+opening a paid control session:
+
+```bash
+tenon-pi agent preflight-robot \
+  --profile .tenon/prepared/assets/robot-profile-v1/transform.json \
+  --settings ./robot-run.json --adapter my_installation.tenon_adapter:create \
+  --adapter-config ./local-controller.json --prompt 'place the block in the tray'
+```
+
+This invokes no REST client and sends no policy/motion commands. It verifies
+actual connected/explicitly armed state, initial applied target, calibrated
+bounds/slew and three fresh aligned camera/state captures, then calls `stop()`
+on every exit. The trusted adapter's import, capture and stop methods remain
+installation-owned code. This is an I/O contract check, not physical commissioning
+or a reusable arming receipt: the operator must explicitly rearm before the later
+run, which repeats capture and measured network admission checks.
+
 ## Adapter contract
 
 The supplied installation must implement:
@@ -66,7 +86,7 @@ Three fresh stationary captures warm the runtime before any command application.
 The existing measured admission gate must pass. The loop then captures, requests
 an action, encodes an immutable canonical/native receipt, applies local limits,
 records the driver-returned command and retains the independent native-change
-signal. A guided prefix override stops for explicit reset/rearm; the runner never
+signal. A guided or trained prefix override stops for explicit reset/rearm; the runner never
 forges an epoch or launches a competing receive. Existing reset ownership is
 retained while cleanup drains outstanding work.
 

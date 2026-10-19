@@ -1,5 +1,9 @@
 # Data-first quickstart
 
+For the unpublished candidate, follow the [recommended WAN workflow](training-candidate.md).
+The ordinary workflow below preserves stable 0.2 request shapes; new features are not
+claimed live.
+
 Install from the repository with `pip install '.[data]'` (Python 3.11+). Set
 `TENON_API_KEY` without echoing it and configure `TENON_BASE_URL` for your invited
 endpoint. An API key does not establish endpoint availability or model support.
