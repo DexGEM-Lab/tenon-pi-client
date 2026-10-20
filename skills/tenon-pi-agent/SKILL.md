@@ -13,9 +13,8 @@ below resolve from this skill directory. Read `../../docs/quickstart.md` (or
 
 - Read the request and existing `.tenon/run.json` before starting resources.
   Keep one context per intended run; do not delete it to escape an error.
-- Use `TENON_API_KEY` and configured `TENON_BASE_URL`. Do not print credentials,
-  environment dumps, connection tokens or signed URLs. A default URL is not
-  proof of service availability. Never request service/storage internals.
+- Use the API key supplied by the service operator as `TENON_API_KEY` and the
+  configured `TENON_BASE_URL`. A default URL is not proof of service availability.
 - Establish task meaning, data location, target simulator or supplied controller,
   method and total spending ceiling. Ask only for missing information that cannot
   be established from data/configuration. Split the ceiling between training and
